@@ -1,0 +1,25 @@
+{
+  "name": "bitcoin-token-smart-contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KyberNetwork/bitcoin-token-smart-contracts.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KyberNetwork/bitcoin-token-smart-contracts/issues"
+  },
+  "homepage": "https://github.com/KyberNetwork/bitcoin-token-smart-contracts#readme",
+  "dependencies": {
+    "openzeppelin-solidity": "1.11.0",
+    "solc": "^0.4.24",
+    "truffle": "^4.1.13",
+    "web3": "^1.0.0-beta.35"
+  }
+}
