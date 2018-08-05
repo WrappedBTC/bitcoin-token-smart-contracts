@@ -4,9 +4,9 @@ import 'openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol';
 import 'openzeppelin-solidity/contracts/ownership/Claimable.sol';
 
 
-contract tokenWrapper is Claimable {
+contract WBTCProxy is Claimable {
 
-    DetailedERC20 token;
+    DetailedERC20 public token;
 
     constructor(DetailedERC20 _token) public {
         token = _token;
