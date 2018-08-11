@@ -1,10 +1,10 @@
 pragma solidity ^0.4.24;
 
 import 'openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol';
-import 'openzeppelin-solidity/contracts/ownership/Claimable.sol';
+import './Withdrawable.sol';
 
 
-contract WBTCProxy is Claimable {
+contract WBTCProxy is Withdrawable {
 
     DetailedERC20 public token;
 

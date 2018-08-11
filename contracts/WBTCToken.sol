@@ -6,13 +6,10 @@ import 'openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol';
 import 'openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol';
 import 'openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol';
 import 'openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol';
-import 'openzeppelin-solidity/contracts/ownership/Claimable.sol';
-import 'openzeppelin-solidity/contracts/ownership/CanReclaimToken.sol';
-import 'openzeppelin-solidity/contracts/ownership/HasNoEther.sol';
+import './Withdrawable.sol';
 
 
-contract WBTCToken is StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken, Claimable,
-    CanReclaimToken, HasNoEther {
+contract WBTCToken is StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken, Withdrawable {
 
     constructor() public DetailedERC20("Wrapped Bitcoin", "WBTC", 8) {}
 
