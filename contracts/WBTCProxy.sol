@@ -1,7 +1,7 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
-import 'openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol';
-import './Withdrawable.sol';
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
+import "./Withdrawable.sol";
 
 
 contract WBTCProxy is Withdrawable {
@@ -9,17 +9,19 @@ contract WBTCProxy is Withdrawable {
     DetailedERC20 public token;
 
     constructor(DetailedERC20 _token) public {
+        require(_token != address(0), "bad address");
         token = _token;
     }
 
     event TokenSet(DetailedERC20 token);
 
     function setToken(DetailedERC20 _token) public onlyOwner {
+        require(_token != address(0), "bad address");
         token = _token;
         emit TokenSet(token);
     }
 
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public view returns (uint) {
         return token.totalSupply();
     }
 
@@ -35,23 +37,23 @@ contract WBTCProxy is Withdrawable {
         return token.decimals();
     }
 
-    function balanceOf(address _who) public view returns (uint256) {
-        return token.balanceOf(_who);
+    function balanceOf(address who) public view returns (uint) {
+        return token.balanceOf(who);
     }
 
-    function allowance(address _owner, address _spender) public view returns (uint256) {
-        return token.allowance(_owner, _spender);
+    function allowance(address owner, address spender) public view returns (uint) {
+        return token.allowance(owner, spender);
     }
 
-    function transfer(address _to, uint256 _value) public returns (bool) {
-        return token.transfer(_to, _value);
+    function transfer(address to, uint value) public returns (bool) {
+        return token.transfer(to, value);
     }
 
-    function approve(address _spender, uint256 _value) public returns (bool) {
-        return token.approve(_spender, _value);
+    function approve(address spender, uint value) public returns (bool) {
+        return token.approve(spender, value);
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) public returns (bool) {
-        return token.transferFrom(_from, _to, _value);
+    function transferFrom(address from, address to, uint value) public returns (bool) {
+        return token.transferFrom(from, to, value);
     }
 }
