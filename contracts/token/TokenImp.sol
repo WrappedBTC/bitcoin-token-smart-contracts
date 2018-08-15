@@ -6,14 +6,16 @@ import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
-import "./Withdrawable.sol";
-import "./WBTCTokenInterface.sol";
+import "../utils/Withdrawable.sol";
+import "../token/TokenImpInterface.sol";
 
 
-contract WBTCToken is WBTCTokenInterface, StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
+contract TokenImp is TokenImpInterface, StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
     Withdrawable {
 
-    constructor() public DetailedERC20("Wrapped Bitcoin", "WBTC", 8) {}
+    /* solhint-disable no-empty-blocks */
+    constructor() public DetailedERC20("Wrapped Bitcoin", "WBTC", 8) { }
+    /* solhint-enable no-empty-blocks */
 
     function burn(uint value) public onlyOwner {
         super.burn(value);

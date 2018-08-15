@@ -5,4 +5,6 @@ import "openzeppelin-solidity/contracts/ownership/CanReclaimToken.sol";
 import "openzeppelin-solidity/contracts/ownership/HasNoEther.sol";
 
 
-contract Withdrawable is Claimable, CanReclaimToken, HasNoEther {}
+    /* solhint-disable no-empty-blocks */
+contract Withdrawable is Claimable, CanReclaimToken, HasNoEther { }
+    /* solhint-enable no-empty-blocks */

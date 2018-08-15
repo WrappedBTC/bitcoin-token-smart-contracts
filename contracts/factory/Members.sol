@@ -1,18 +1,18 @@
 pragma solidity 0.4.24;
 
 
-import "./Withdrawable.sol";
-import "./IndexedMapping.sol";
-import "./RolesInterface.sol";
+import "../utils/Withdrawable.sol";
+import "../utils/IndexedMapping.sol";
+import "../factory/MembersInterface.sol";
 
 
-contract Roles is RolesInterface, Withdrawable {
+contract Members is MembersInterface, Withdrawable {
 
     IndexedMapping public custodians;
     IndexedMapping public merchants;
 
     function addCustodian(address custodian, bool add) external onlyOwner {
-        require(custodian != address(0), "bad address");
+        require(custodian != address(0), "invalid custodian address");
         if (add) {
             require(custodians.add(custodian), "custodian insert failed"); 
         } else {
@@ -21,7 +21,7 @@ contract Roles is RolesInterface, Withdrawable {
     }
 
     function addMerchant(address merchant, bool add) external onlyOwner {
-        require(merchant != address(0), "bad address");
+        require(merchant != address(0), "invalid merchant address");
         if (add) {
             require(merchants.add(merchant), "merchant insert failed"); 
         } else {

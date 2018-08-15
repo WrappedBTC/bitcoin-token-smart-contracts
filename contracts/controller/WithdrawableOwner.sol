@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 
-import "./Withdrawable.sol";
+import "../utils/Withdrawable.sol";
 
 
 contract WithdrawableOwner is Withdrawable {
