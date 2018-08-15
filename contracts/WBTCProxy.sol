@@ -1,21 +1,24 @@
 pragma solidity 0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
-import "./Withdrawable.sol";
+import "./WBTCToken.sol";
 
 
 contract WBTCProxy is Withdrawable {
 
-    DetailedERC20 public token;
+    WBTCToken public token;
 
-    constructor(DetailedERC20 _token) public {
+    constructor(WBTCToken _token) public {
         require(_token != address(0), "bad address");
         token = _token;
     }
 
-    event TokenSet(DetailedERC20 token);
+    function getToken() public view returns (address) {
+        return token;
+    }
 
-    function setToken(DetailedERC20 _token) public onlyOwner {
+    event TokenSet(WBTCToken token);
+
+    function setToken(WBTCToken _token) public onlyOwner {
         require(_token != address(0), "bad address");
         token = _token;
         emit TokenSet(token);
@@ -55,5 +58,13 @@ contract WBTCProxy is Withdrawable {
 
     function transferFrom(address from, address to, uint value) public returns (bool) {
         return token.transferFrom(from, to, value);
+    }
+
+    function increaseApproval(address spender, uint256 addedValue) public returns (bool) {
+        return token.increaseApproval(spender, addedValue);
+    }
+
+    function decreaseApproval(address spender, uint256 subtractedValue) public returns (bool) {
+        return token.decreaseApproval(spender, subtractedValue);
     }
 }

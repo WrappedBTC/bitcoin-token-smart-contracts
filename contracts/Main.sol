@@ -17,20 +17,17 @@ contract Main is MainInterface, Withdrawable, WithdrawableOwner {
     address public burner;
 
     constructor(
-        WBTCTokenInterface _token,
         WBTCProxyInterface _wbtcProxy,
         RolesInterface _roles, 
         address _minter,
         address _burner 
     )
     public {
-        require(_token != address(0), "bad address");
         require(_wbtcProxy != address(0), "bad address");
         require(_roles != address(0), "bad address");
         require(_minter != address(0), "bad address");
         require(_burner != address(0), "bad address");
 
-        token = _token;
         wbtcProxy = _wbtcProxy;
         roles = _roles;
         minter = _minter;
@@ -52,7 +49,6 @@ contract Main is MainInterface, Withdrawable, WithdrawableOwner {
 
     function setToken(WBTCTokenInterface _token) external onlyOwner {
         require(_token != address(0), "bad address");
-        token = _token;
         wbtcProxy.setToken(_token);
         emit TokenSet(token);
     }
@@ -89,30 +85,39 @@ contract Main is MainInterface, Withdrawable, WithdrawableOwner {
         emit BurnerSet(burner);
     }
 
+    // onlyOwner actions on roles
+    function addCustodian(address custodian, bool add) external onlyOwner {
+        roles.addCustodian(custodian, add);
+    }
+
+    function addMerchant(address merchant, bool add) external onlyOwner {
+        roles.addMerchant(merchant, add);
+    } 
+
     // onlyOwner actions on token
     event Paused();
 
     function pause() external onlyOwner {
-        token.pause();
+        wbtcProxy.getToken().pause();
         emit Paused();
     }
 
     event UnPaused();
 
     function unpause() external onlyOwner {
-        token.unpause();
+        wbtcProxy.getToken().unpause();
         emit UnPaused();
     }
 
     // onlyMinter/Burner actions on token
     function mint(address to, uint amount) external onlyMinter returns (bool) {
         require(to != address(0), "bad address");
-        require(token.mint(to, amount), "minting failed.");
+        require(wbtcProxy.getToken().mint(to, amount), "minting failed.");
         return true;
     }
 
     function burn(uint value) external onlyBurner returns (bool) {
-        token.burn(value);
+        wbtcProxy.getToken().burn(value);
         return true;
     }
 
@@ -123,5 +128,9 @@ contract Main is MainInterface, Withdrawable, WithdrawableOwner {
 
     function isMerchant(address val) external view returns(bool) {
         return roles.isMerchant(val);
+    }
+
+    function getProxy() external view returns(WBTCProxyInterface) {
+        return wbtcProxy;
     }
 }
