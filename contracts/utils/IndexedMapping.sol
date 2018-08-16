@@ -1,13 +1,16 @@
 pragma solidity 0.4.24;
 
 
-contract IndexedMapping {
+import "../utils/Withdrawable.sol";
+
+
+contract IndexedMapping is Withdrawable {
 
     mapping(address=>bool) public valueExists;
     mapping(address=>uint) public valueIndex;
     address[] public valueList;
 
-    function add(address val) public returns(bool) {
+    function add(address val) public onlyOwner returns(bool) {
         if (exists(val)) return false;
 
         valueExists[val] = true;
@@ -16,7 +19,7 @@ contract IndexedMapping {
         return true;
     }
 
-    function remove(address val) public returns(bool) {
+    function remove(address val) public  onlyOwner returns(bool) {
         uint index;
         address lastVal;
 

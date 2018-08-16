@@ -2,7 +2,7 @@ pragma solidity 0.4.24;
 
 
 import "../utils/Withdrawable.sol";
-import "../controller/WithdrawableOwner.sol";
+import "../utils/WithdrawableOwner.sol";
 import "../controller/ControllerInterface.sol";
 import "../token/TokenImpInterface.sol";
 import "../token/TokenInterface.sol";
@@ -13,46 +13,33 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
 
     TokenInterface public token;
     MembersInterface public members;
-    address public minter;
-    address public burner;
+    address public factory;
 
-    constructor(
-        TokenInterface _token,
-        MembersInterface _members, 
-        address _minter,
-        address _burner 
-    )
-    public {
+    constructor(TokenInterface _token) public {
         require(_token != address(0), "invalid _tokens address");
-        require(_members != address(0), "invalid _members address");
-        require(_minter != address(0), "invalid _minter address");
-        require(_burner != address(0), "invaild _burner address");
-
         token = _token;
-        members = _members;
-        minter = _minter;
-        burner = _burner;
     }
 
-    modifier onlyMinter() {
-        require(msg.sender == minter, "sender not authorized for minting.");
-        _;
-    }
-
-    modifier onlyBurner() {
-        require(msg.sender == burner, "sender not authorized for burning.");
+    modifier onlyFactory() {
+        require(msg.sender == factory, "sender not authorized for minting or burning.");
         _;
     }
 
     // setters
-    event TokenSet(TokenInterface _token, TokenImpInterface tokenImp);
+    event TokenSet(TokenInterface _token);
 
-    function setToken(TokenInterface _token, TokenImpInterface _tokenImp) external onlyOwner {
+    function setToken(TokenInterface _token) external onlyOwner {
         require(_token != address(0), "invalid _token address");
-        require(_tokenImp != address(0), "invalid _tokenImp address");
         token = _token;
+        emit TokenSet(_token);
+    }
+
+    event TokenImpSet(TokenImpInterface tokenImp);
+
+    function setTokenImp(TokenImpInterface _tokenImp) external onlyOwner {
+        require(_tokenImp != address(0), "invalid _tokenImp address");
         token.setTokenImp(_tokenImp);
-        emit TokenSet(_token, _tokenImp);
+        emit TokenImpSet(_tokenImp);
     }
 
     event MembersSet(MembersInterface members);
@@ -63,20 +50,12 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
         emit MembersSet(members);
     }
 
-    event MinterSet(address minter);
+    event FactorySet(address minter);
 
-    function setMinter(address _minter) external onlyOwner {
-        require(_minter != address(0), "invalid _minter address");
-        minter = _minter;
-        emit MinterSet(minter);
-    }
-
-    event BurnerSet(address burner);
-
-    function setBurner(address _burner) external onlyOwner {
-        require(_burner != address(0), "invalid _burner address");
-        burner = _burner;
-        emit BurnerSet(burner);
+    function setFactory(address _factory) external onlyOwner {
+        require(_factory != address(0), "invalid _factory address");
+        factory = _factory;
+        emit FactorySet(factory);
     }
 
     // onlyOwner actions on token
@@ -95,13 +74,13 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
     }
 
     // only Minter/Burner actions on token
-    function mint(address to, uint amount) external onlyMinter returns (bool) {
+    function mint(address to, uint amount) external onlyFactory returns (bool) {
         require(to != address(0), "bad address");
         require(token.getTokenImp().mint(to, amount), "minting failed.");
         return true;
     }
 
-    function burn(uint value) external onlyBurner returns (bool) {
+    function burn(uint value) external onlyFactory returns (bool) {
         token.getTokenImp().burn(value);
         return true;
     }
