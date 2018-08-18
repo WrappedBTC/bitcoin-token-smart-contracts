@@ -3,6 +3,20 @@ let Members = artifacts.require("./factory/Members.sol")
 let Controller = artifacts.require("./controller/Controller.sol") 
 let Factory = artifacts.require("./factory/Factory.sol")
 
+const REQUEST_FROM_FIELD                = 0
+const REQUEST_AMOUNT_FIELD              = 1
+const REQUEST_BTCDEPOSITADDRESS_FIELD   = 2
+const REQUEST_BTCTXID_FIELD             = 3
+const REQUEST_NONCE_FIELD               = 4
+const REQUEST_TIMESTAMP_FIELD           = 5
+const REQUEST_STATUS_FIELD              = 6
+const REQUEST_HASH_FIELD                = 7
+
+const REQUEST_STATUS_PENDING            = 0
+const REQUEST_STATUS_CANCELED           = 1
+const REQUEST_STATUS_APPROVED           = 2
+const REQUEST_STATUS_REJECTED           = 3
+
 contract('Controller', function(accounts) {
     it("should test the controller.", async function () {
         admin = accounts[0];
@@ -31,27 +45,51 @@ contract('Controller', function(accounts) {
         let custodianBtcDepositAdress = "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY"
         await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAdress, {from:custodian});
 
-        ///////////// mint ////////////
+        ///////////// add mint request ////////////
         let mintAmount = 123456;
-        let btcTxid= "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16"
+        let mintBtcTxid= "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16"
         let btcDepositAdress = await factory.custodianBtcDepositAddress(merchant1)
-        await factory.addMintRequest(mintAmount, btcTxid, btcDepositAdress, {from:merchant1});
+        await factory.addMintRequest(mintAmount, mintBtcTxid, btcDepositAdress, {from:merchant1});
 
-        let request0 = await factory.getMintRequest(0);
-        let request0Hash = request0[6];
-        await factory.confirmMintRequest(request0Hash, {from:custodian});
+        ///////////// confirm mint request ////////////
+        let mintRequest0 = await factory.getMintRequest(0);
+        let mintRequest0Hash = mintRequest0[REQUEST_HASH_FIELD];
+        let mintRequest0State = mintRequest0[REQUEST_STATUS_FIELD];
+
+        assert.equal(mintRequest0State, REQUEST_STATUS_PENDING, "bad status for request");
+
+        await factory.confirmMintRequest(mintRequest0Hash, {from:custodian});
 
         balance = await token.balanceOf(merchant1);
         assert.equal(balance, mintAmount, "bad balance after minting");
 
+        mintRequest0 = await factory.getMintRequest(0);
+        mintRequest0State = mintRequest0[REQUEST_STATUS_FIELD];
+        assert.equal(mintRequest0State, REQUEST_STATUS_APPROVED, "bad status for request");
+
         ///////////// burn ////////////
-        /*
         let burnAmount = mintAmount / 3;
-        await token.transfer(factory.address, burnAmount, {from:merchant1});
-        
-        await token.burn(burnAmount, {from:merchant1})
+        await token.approve(factory.address, burnAmount, {from:merchant1});
+
+        await factory.burn(burnAmount, {from:merchant1});
         balance = await token.balanceOf(merchant1);
         assert.equal(balance, mintAmount - burnAmount, "bad balance after burning");
-        */
+
+        ///////////// confirm mint request ////////////
+        let burnRequest0 = await factory.getBurnRequest(0);
+        let burnRequest0Hash = burnRequest0[REQUEST_HASH_FIELD];
+        let burnRequest0State = burnRequest0[REQUEST_STATUS_FIELD];
+
+        assert.equal(burnRequest0State, REQUEST_STATUS_PENDING, "bad status for request");
+
+        let burnBtcTxid= "a3183ac596303b9d638783ca57adab3c75c605a6356abc91338530b9831e9b16"
+        await factory.confirmBurnRequest(burnRequest0Hash, burnBtcTxid, {from:custodian});
+
+        burnRequest0 = await factory.getBurnRequest(0);
+        burnRequest0State = burnRequest0[REQUEST_STATUS_FIELD];
+        assert.equal(burnRequest0State, REQUEST_STATUS_APPROVED, "bad status for request");
+
+        ///////////////////////
+        //TODO: check also cancel, reject, multiple requests
     });
 });

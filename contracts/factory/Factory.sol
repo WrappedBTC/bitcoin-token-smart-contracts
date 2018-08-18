@@ -174,6 +174,7 @@ contract Factory is Withdrawable {
         string btcTxid,
         uint requestNonce,
         uint timestamp,
+        RequestStatus status,
         bytes32 requestHash
     )
     {
@@ -185,6 +186,7 @@ contract Factory is Withdrawable {
             request.btcTxid,
             request.nonce,
             request.timestamp,
+            request.status,
             calcRequestHash(request)
         );
     }
@@ -199,6 +201,7 @@ contract Factory is Withdrawable {
         string btcTxid,
         uint requestNonce,
         uint timestamp,
+        RequestStatus status,
         bytes32 requestHash
     )
     {
@@ -210,6 +213,7 @@ contract Factory is Withdrawable {
             request.btcTxid,
             request.nonce,
             request.timestamp,
+            request.status,
             calcRequestHash(request)
         );
     }
