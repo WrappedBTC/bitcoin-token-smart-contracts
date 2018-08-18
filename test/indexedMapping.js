@@ -25,7 +25,7 @@ contract('IndexedMapping', function(accounts) {
 
         
 /*
-        let token = await Token.new(tokenImp.address);
+        let token = await Token.new(token.address);
         let controller = await Controller.new(token.address);
         let factory = await Factory.new(controller.address);
         let members = await Members.new();
@@ -33,11 +33,11 @@ contract('IndexedMapping', function(accounts) {
         await controller.setFactory(factory.address)
         await controller.setMembers(members.address)
 
-        await tokenImp.transferOwnership(controller.address)
+        await token.transferOwnership(controller.address)
         await token.transferOwnership(controller.address)
         // can transfer ownership for factory or memebers, but will be good only for pulling out funds
 
-        await controller.callClaimOwnership(tokenImp.address)
+        await controller.callClaimOwnership(token.address)
         await controller.callClaimOwnership(token.address)
 
         let custodian = admin;
@@ -54,14 +54,14 @@ contract('IndexedMapping', function(accounts) {
 
         let tx = await controller.mint(to, amount);
         
-        balance = await tokenImp.balanceOf(admin);
+        balance = await token.balanceOf(admin);
         assert.equal(balance, amount, "bad balance after minting");
 
         let value = amount / 3;
         let btcDestAddress = 0;
-        await tokenImp.transfer(controller.address, value, {from:admin});
+        await token.transfer(controller.address, value, {from:admin});
         tx = await controller.burn(value)
-        balance = await tokenImp.balanceOf(admin);
+        balance = await token.balanceOf(admin);
         assert.equal(balance, amount - value, "bad balance after burning");
          */
 

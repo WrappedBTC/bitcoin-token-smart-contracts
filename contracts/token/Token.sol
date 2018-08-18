@@ -1,71 +1,28 @@
 pragma solidity 0.4.24;
 
 
-import "../token/TokenImp.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
+import "../utils/Withdrawable.sol";
+import "../token/TokenInterface.sol";
 
 
-contract Token is Withdrawable {
+contract Token is TokenInterface, StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
+    Withdrawable {
 
-    TokenImp public tokenImp;
+    /* solhint-disable no-empty-blocks */
+    constructor() public DetailedERC20("Wrapped Bitcoin", "WBTC", 8) { }
+    /* solhint-enable no-empty-blocks */
 
-    constructor(TokenImp _tokenImp) public {
-        require(_tokenImp != address(0), "invalid _tokenImp address");
-        tokenImp = _tokenImp;
+    function burn(uint value) public onlyOwner {
+        super.burn(value);
     }
 
-    function getTokenImp() public view returns (address) {
-        return tokenImp;
+    function finishMinting() public onlyOwner canMint returns (bool) {
+        return false;
     }
 
-    event TokenSet(TokenImp tokenImp);
-
-    function setTokenImp(TokenImp _tokenImp) public onlyOwner {
-        require(_tokenImp != address(0), "invalid _tokenImp address");
-        tokenImp = _tokenImp;
-        emit TokenSet(tokenImp);
-    }
-
-    function totalSupply() public view returns (uint) {
-        return tokenImp.totalSupply();
-    }
-
-    function name() public view returns (string) {
-        return tokenImp.name();
-    }
-
-    function symbol() public view returns (string) {
-        return tokenImp.symbol();
-    }
-
-    function decimals() public view returns (uint8) {
-        return tokenImp.decimals();
-    }
-
-    function balanceOf(address who) public view returns (uint) {
-        return tokenImp.balanceOf(who);
-    }
-
-    function allowance(address owner, address spender) public view returns (uint) {
-        return tokenImp.allowance(owner, spender);
-    }
-
-    function transfer(address to, uint value) public returns (bool) {
-        return tokenImp.transfer(to, value);
-    }
-
-    function approve(address spender, uint value) public returns (bool) {
-        return tokenImp.approve(spender, value);
-    }
-
-    function transferFrom(address from, address to, uint value) public returns (bool) {
-        return tokenImp.transferFrom(from, to, value);
-    }
-
-    function increaseApproval(address spender, uint256 addedValue) public returns (bool) {
-        return tokenImp.increaseApproval(spender, addedValue);
-    }
-
-    function decreaseApproval(address spender, uint256 subtractedValue) public returns (bool) {
-        return tokenImp.decreaseApproval(spender, subtractedValue);
-    }
 }

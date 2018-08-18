@@ -1,4 +1,3 @@
-let TokenImp = artifacts.require("./token/TokenImp.sol")
 let Token = artifacts.require("./token/Token.sol")
 let Members = artifacts.require("./factory/Members.sol")
 let Controller = artifacts.require("./controller/Controller.sol") 
@@ -8,8 +7,7 @@ contract('Controller', function(accounts) {
     it("should test the controller.", async function () {
         admin = accounts[0];
 
-        let tokenImp = await TokenImp.new();
-        let token = await Token.new(tokenImp.address);
+        let token = await Token.new();
         let controller = await Controller.new(token.address);
         let factory = await Factory.new(controller.address);
         let members = await Members.new();
@@ -17,11 +15,9 @@ contract('Controller', function(accounts) {
         await controller.setFactory(factory.address)
         await controller.setMembers(members.address)
 
-        await tokenImp.transferOwnership(controller.address)
         await token.transferOwnership(controller.address)
         // can transfer ownership for factory or members, but will be good only for pulling out funds
 
-        await controller.callClaimOwnership(tokenImp.address)
         await controller.callClaimOwnership(token.address)
 
         let custodian = accounts[1];
