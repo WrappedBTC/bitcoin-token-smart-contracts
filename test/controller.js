@@ -43,7 +43,7 @@ contract('Controller', function(accounts) {
 
         let request0 = await factory.getMintRequest(0);
         let request0Hash = request0[6];
-        await factory.confirmMintRequest(0, request0Hash, {from:custodian});
+        await factory.confirmMintRequest(request0Hash, {from:custodian});
 
         balance = await token.balanceOf(merchant1);
         assert.equal(balance, mintAmount, "bad balance after minting");
