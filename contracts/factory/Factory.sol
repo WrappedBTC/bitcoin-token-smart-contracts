@@ -104,7 +104,8 @@ contract Factory is Withdrawable {
         string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
         string memory btcTxid = ""; // set txid as empty since it is not known yet
 
-        Request memory request = Request(msg.sender, amount, btcDepositAddress, btcTxid, nonce, timestamp, RequestStatus.PENDING);
+        Request memory request =
+            Request(msg.sender, amount, btcDepositAddress, btcTxid, nonce, timestamp, RequestStatus.PENDING);
         bytes32 requestHash = calcRequestHash(request);
         burnRequestNonce[requestHash] = nonce; 
         burnRequests.push(request);
@@ -146,7 +147,9 @@ contract Factory is Withdrawable {
         burnRequests[nonce].status = RequestStatus.APPROVED; 
 
         string memory btcDepositAddress = merchantBtcDepositAddress[request.from];
-        emit BurnConfirmed(request.from, request.amount, btcDepositAddress, btcTxid, request.nonce, request.timestamp, requestHash);
+        emit BurnConfirmed(
+            request.from, request.amount, btcDepositAddress, btcTxid, request.nonce, request.timestamp, requestHash
+        );
     }
 
     event MintRequestCancel(address from, uint nonce, bytes32 requestHash);
