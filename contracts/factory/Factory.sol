@@ -12,7 +12,7 @@ contract Factory is Withdrawable {
     struct Request {
         address from; // sender of the request.
         uint amount;
-        string btcDepositAddress; // custodian's btc address in mint, merchant's btc address for burn. 
+        string btcDepositAddress; // custodian's btc address in mint, merchant's btc address for burn.
         string btcTxid;
         uint nonce;
         uint timestamp;
@@ -71,11 +71,11 @@ contract Factory is Withdrawable {
 
     /* solhint-disable not-rely-on-time */
     event MintRequestAdd(
-        address from,
+        uint indexed nonce,
+        address indexed from,
         uint amount,
         string btcDepositAdress,
         string btcTxid,
-        uint nonce,
         uint timestamp,
         bytes32 requestHash
     );
@@ -93,10 +93,17 @@ contract Factory is Withdrawable {
         mintRequestNonce[requestHash] = nonce; 
         mintRequests.push(request);
 
-        emit MintRequestAdd(msg.sender, amount, btcDepositAdress, btcTxid, nonce, timestamp, requestHash);
+        emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAdress, btcTxid, timestamp, requestHash);
     }
 
-    event Burned(address from, uint amount, string btcDepositAddress, uint nonce, uint timestamp, bytes32 requestHash);
+    event Burned(
+        uint indexed nonce,
+        address indexed from,
+        uint amount,
+        string btcDepositAddress,
+        uint timestamp,
+        bytes32 requestHash
+    );
 
     function burn(uint amount) external onlyMerchant returns (bool) {
         uint nonce = burnRequests.length;
@@ -112,8 +119,8 @@ contract Factory is Withdrawable {
 
         require(controller.getToken().transferFrom(msg.sender, controller, amount), "trasnfer tokens to burn failed");
         require(controller.burn(amount), "burn failed");
-        emit Burned(msg.sender, amount, btcDepositAddress, nonce, timestamp, requestHash);
 
+        emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
     }
     /* solhint-disable not-rely-on-time */
 
@@ -126,13 +133,13 @@ contract Factory is Withdrawable {
     }
 
     event BurnConfirmed(
-        address from,
+        uint indexed nonce,
+        address indexed from,
         uint amount,
         string btcDepositAddress,
         string btcTxid,
-        uint nonce,
         uint timestamp,
-        bytes32 requestHash
+        bytes32 inputRequestHash
     );
 
     function confirmBurnRequest(bytes32 requestHash, string btcTxid) external onlyCustodian {
@@ -144,15 +151,17 @@ contract Factory is Withdrawable {
         validateRequestHash(request, requestHash);
 
         burnRequests[nonce].btcTxid = btcTxid;
-        burnRequests[nonce].status = RequestStatus.APPROVED; 
+        burnRequests[nonce].status = RequestStatus.APPROVED;
+        burnRequestNonce[calcRequestHash(burnRequests[nonce])] = nonce;
 
         string memory btcDepositAddress = merchantBtcDepositAddress[request.from];
+
         emit BurnConfirmed(
-            request.from, request.amount, btcDepositAddress, btcTxid, request.nonce, request.timestamp, requestHash
+            request.nonce, request.from, request.amount, btcDepositAddress, btcTxid, request.timestamp, requestHash
         );
     }
 
-    event MintRequestCancel(address from, uint nonce, bytes32 requestHash);
+    event MintRequestCancel(uint indexed nonce, address indexed from, bytes32 requestHash);
 
     function cancelMintRequest(bytes32 requestHash) external onlyMerchant {
         require(requestHash != 0, "request hash is 0");
@@ -164,32 +173,34 @@ contract Factory is Withdrawable {
         validateRequestHash(request, requestHash);
 
         request.status = RequestStatus.CANCELED;
-        emit MintRequestCancel(msg.sender, nonce, requestHash);
+
+        emit MintRequestCancel(nonce, msg.sender, requestHash);
     }
 
     function getMintRequest(uint nonce)
     public
     view
     returns(
+        uint requestNonce,
         address from,
         uint amount,
         string btcDestAddress,
         string btcTxid,
-        uint requestNonce,
         uint timestamp,
-        RequestStatus status,
+        string status,
         bytes32 requestHash
     )
     {
         Request memory request = mintRequests[nonce];
+        string memory statusString = getStatusString(request.status); 
         return (
+            request.nonce,
             request.from,
             request.amount,
             request.btcDepositAddress,
             request.btcTxid,
-            request.nonce,
             request.timestamp,
-            request.status,
+            statusString,
             calcRequestHash(request)
         );
     }
@@ -198,25 +209,26 @@ contract Factory is Withdrawable {
     public
     view
     returns(
+        uint requestNonce,
         address from,
         uint amount,
         string btcDepositAddress,
         string btcTxid,
-        uint requestNonce,
         uint timestamp,
-        RequestStatus status,
+        string status,
         bytes32 requestHash
     )
     {
         Request storage request = burnRequests[nonce];
+        string memory statusString = getStatusString(request.status); 
         return (
+            request.nonce,
             request.from,
             request.amount,
             request.btcDepositAddress,
             request.btcTxid,
-            request.nonce,
             request.timestamp,
-            request.status,
+            statusString,
             calcRequestHash(request)
         );
     }
@@ -237,30 +249,13 @@ contract Factory is Withdrawable {
         return (!compareStrings(a, ""));
     }
 
-    function validateRequestHash(Request request, bytes32 requestHash) internal pure {
-        bytes32 calculatedHash = calcRequestHash(request);
-        require(requestHash == calculatedHash, "given request hash is different than hash of stored request.");
-    }
-
-    function calcRequestHash(Request request) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(
-            request.from,
-            request.amount,
-            request.btcDepositAddress,
-            request.btcTxid,
-            request.nonce,
-            request.timestamp,
-            request.status
-        ));
-    }
-
     event MintConfirmed(
+        uint indexed nonce,
+        address indexed from,
         bool confirm,
-        address from,
         uint amount,
         string btcDepositAddress,
         string btcTxid,
-        uint nonce,
         uint timestamp,
         bytes32 requestHash
     );
@@ -281,14 +276,43 @@ contract Factory is Withdrawable {
         }
 
         emit MintConfirmed(
+            request.nonce,
+            request.from,
             confirm,
+            request.amount,
+            request.btcDepositAddress,
+            request.btcTxid,
+            request.timestamp,
+            requestHash
+        );
+    }
+
+    function validateRequestHash(Request request, bytes32 requestHash) internal pure {
+        bytes32 calculatedHash = calcRequestHash(request);
+        require(requestHash == calculatedHash, "given request hash is different than hash of stored request.");
+    }
+
+    function calcRequestHash(Request request) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked(
             request.from,
             request.amount,
             request.btcDepositAddress,
             request.btcTxid,
             request.nonce,
             request.timestamp,
-            requestHash
-        );
+            request.status
+        ));
+    }
+
+    function getStatusString(RequestStatus status) internal pure returns (string) {
+        if (status == RequestStatus.PENDING) {
+            return "pending";
+        } else if (status == RequestStatus.CANCELED) {
+            return "canceled";
+        } else if (status == RequestStatus.APPROVED) {
+            return "approved";
+        } else if (status == RequestStatus.REJECTED) {
+            return "rejected";
+        }
     }
 }

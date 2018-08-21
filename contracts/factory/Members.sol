@@ -35,7 +35,7 @@ contract Members is MembersInterface, Withdrawable, WithdrawableOwner {
     function addMerchant(address merchant, bool add) external onlyOwner {
         require(merchant != address(0), "invalid merchant address");
         if (add) {
-            require(merchants.add(merchant), "merchant insert failed"); 
+            require(merchants.add(merchant), "merchant insert failed");
         } else {
             require(merchants.remove(merchant), "merchant remove failed");
         }

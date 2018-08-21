@@ -12,10 +12,10 @@ const REQUEST_TIMESTAMP_FIELD           = 5
 const REQUEST_STATUS_FIELD              = 6
 const REQUEST_HASH_FIELD                = 7
 
-const REQUEST_STATUS_PENDING            = 0
-const REQUEST_STATUS_CANCELED           = 1
-const REQUEST_STATUS_APPROVED           = 2
-const REQUEST_STATUS_REJECTED           = 3
+const REQUEST_STATUS_PENDING            = "pending"
+const REQUEST_STATUS_CANCELED           = "canceled"
+const REQUEST_STATUS_APPROVED           = "approved"
+const REQUEST_STATUS_REJECTED           = "rejeted"
 
 contract('Controller', function(accounts) {
     it("should test the controller.", async function () {

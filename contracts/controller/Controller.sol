@@ -49,7 +49,7 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
         emit FactorySet(factory);
     }
 
-    // onlyOwner actions on token
+    // only owner actions on token
     event Paused();
 
     function pause() external onlyOwner {
@@ -64,7 +64,7 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
         emit UnPaused();
     }
 
-    // only Minter/Burner actions on token
+    // only factory actions on token
     function mint(address to, uint amount) external onlyFactory returns (bool) {
         require(to != address(0), "bad address");
         require(token.mint(to, amount), "minting failed.");

@@ -14,7 +14,7 @@ contract Token is TokenInterface, StandardToken, DetailedERC20, MintableToken, B
     Withdrawable {
 
     /* solhint-disable no-empty-blocks */
-    constructor() public DetailedERC20("Wrapped Bitcoin", "WBTC", 8) { }
+    constructor() public DetailedERC20("Wrapped BTC", "WBTC", 8) { }
     /* solhint-enable no-empty-blocks */
 
     function burn(uint value) public onlyOwner {
