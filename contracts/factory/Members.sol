@@ -60,4 +60,12 @@ contract Members is MembersInterface, OwnableContract, OwnableContractOwner {
     function isMerchant(address addr) external view returns(bool) {
         return merchants.exists(addr);
     }
+
+    function getMerchants() public view returns (address[]) {
+        return merchants.getValueList();
+    }
+
+    function getCustodians() public view returns (address[]) {
+        return custodians.getValueList();
+    }
 }

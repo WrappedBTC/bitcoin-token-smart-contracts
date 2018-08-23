@@ -170,7 +170,13 @@ contract Factory is OwnableContract {
         burnRequestNonce[calcRequestHash(burnRequests[nonce])] = nonce;
 
         emit BurnConfirmed(
-            request.nonce, request.requester, request.amount, request.btcDepositAddress, btcTxid, request.timestamp, requestHash
+            request.nonce,
+            request.requester,
+            request.amount,
+            request.btcDepositAddress,
+            btcTxid,
+            request.timestamp,
+            requestHash
         );
     }
 

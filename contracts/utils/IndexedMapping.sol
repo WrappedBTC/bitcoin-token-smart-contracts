@@ -46,4 +46,8 @@ contract IndexedMapping is OwnableContract {
     function getValue(uint index) public view returns(address) {
         return valueList[index];
     }
+
+    function getValueList() public view returns(address[]) {
+        return valueList;
+    } 
 }
