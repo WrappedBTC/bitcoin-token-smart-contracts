@@ -1,20 +1,20 @@
 pragma solidity 0.4.24;
 
 
-import "../utils/Withdrawable.sol";
-import "../utils/WithdrawableOwner.sol";
+import "../utils/OwnableContract.sol";
+import "../utils/OwnableContractOwner.sol";
 import "../controller/ControllerInterface.sol";
-import "../token/TokenInterface.sol";
+import "../token/WBTCInterface.sol";
 import "../factory/MembersInterface.sol";
 
 
-contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
+contract Controller is ControllerInterface, OwnableContract, OwnableContractOwner {
 
-    TokenInterface public token;
+    WBTCInterface public token;
     MembersInterface public members;
     address public factory;
 
-    constructor(TokenInterface _token) public {
+    constructor(WBTCInterface _token) public {
         require(_token != address(0), "invalid _tokens address");
         token = _token;
     }
@@ -25,12 +25,12 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
     }
 
     // setters
-    event TokenSet(TokenInterface token);
+    event WBTCSet(WBTCInterface token);
 
-    function setToken(TokenInterface _token) external onlyOwner {
+    function setWBTC(WBTCInterface _token) external onlyOwner {
         require(_token != address(0), "invalid _token address");
         token = _token;
-        emit TokenSet(_token);
+        emit WBTCSet(_token);
     }
 
     event MembersSet(MembersInterface members);
@@ -41,7 +41,7 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
         emit MembersSet(members);
     }
 
-    event FactorySet(address minter);
+    event FactorySet(address factory);
 
     function setFactory(address _factory) external onlyOwner {
         require(_factory != address(0), "invalid _factory address");
@@ -52,16 +52,18 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
     // only owner actions on token
     event Paused();
 
-    function pause() external onlyOwner {
+    function pause() external onlyOwner returns (bool) {
         token.pause();
         emit Paused();
+        return true;
     }
 
     event UnPaused();
 
-    function unpause() external onlyOwner {
+    function unpause() external onlyOwner returns (bool) {
         token.unpause();
         emit UnPaused();
+        return true;
     }
 
     // only factory actions on token
@@ -77,15 +79,15 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
     }
 
     // all accessible
-    function isCustodian(address val) external view returns(bool) {
-        return members.isCustodian(val);
+    function isCustodian(address addr) external view returns(bool) {
+        return members.isCustodian(addr);
     }
 
-    function isMerchant(address val) external view returns(bool) {
-        return members.isMerchant(val);
+    function isMerchant(address addr) external view returns(bool) {
+        return members.isMerchant(addr);
     }
 
-    function getToken() external view returns(TokenInterface) {
+    function getWBTC() external view returns(WBTCInterface) {
         return token;
     }
 }

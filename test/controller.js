@@ -1,4 +1,4 @@
-let Token = artifacts.require("./token/Token.sol")
+let WBTC = artifacts.require("./token/WBTC.sol")
 let Members = artifacts.require("./factory/Members.sol")
 let Controller = artifacts.require("./controller/Controller.sol") 
 let Factory = artifacts.require("./factory/Factory.sol")
@@ -21,7 +21,7 @@ contract('Controller', function(accounts) {
     it("should test the controller.", async function () {
         admin = accounts[0];
 
-        let token = await Token.new();
+        let token = await WBTC.new();
         let controller = await Controller.new(token.address);
         let factory = await Factory.new(controller.address);
         let members = await Members.new();
@@ -38,9 +38,9 @@ contract('Controller', function(accounts) {
         let merchant1 = accounts[2];
         let merchant2 = accounts[3];
 
-        await members.addCustodian(custodian, true);
-        await members.addMerchant(merchant1, true);
-        await members.addMerchant(merchant2, true);
+        await members.addCustodian(custodian);
+        await members.addMerchant(merchant1);
+        await members.addMerchant(merchant2);
 
         let custodianBtcDepositAdress = "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY"
         await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAdress, {from:custodian});
