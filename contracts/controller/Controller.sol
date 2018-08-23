@@ -1,58 +1,36 @@
 pragma solidity 0.4.24;
 
 
-import "../utils/Withdrawable.sol";
-import "../controller/WithdrawableOwner.sol";
+import "../utils/OwnableContract.sol";
+import "../utils/OwnableContractOwner.sol";
 import "../controller/ControllerInterface.sol";
-import "../token/TokenImpInterface.sol";
-import "../token/TokenInterface.sol";
+import "../token/WBTCInterface.sol";
 import "../factory/MembersInterface.sol";
 
 
-contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
+contract Controller is ControllerInterface, OwnableContract, OwnableContractOwner {
 
-    TokenInterface public token;
+    WBTCInterface public token;
     MembersInterface public members;
-    address public minter;
-    address public burner;
+    address public factory;
 
-    constructor(
-        TokenInterface _token,
-        MembersInterface _members, 
-        address _minter,
-        address _burner 
-    )
-    public {
+    constructor(WBTCInterface _token) public {
         require(_token != address(0), "invalid _tokens address");
-        require(_members != address(0), "invalid _members address");
-        require(_minter != address(0), "invalid _minter address");
-        require(_burner != address(0), "invaild _burner address");
-
         token = _token;
-        members = _members;
-        minter = _minter;
-        burner = _burner;
     }
 
-    modifier onlyMinter() {
-        require(msg.sender == minter, "sender not authorized for minting.");
-        _;
-    }
-
-    modifier onlyBurner() {
-        require(msg.sender == burner, "sender not authorized for burning.");
+    modifier onlyFactory() {
+        require(msg.sender == factory, "sender not authorized for minting or burning.");
         _;
     }
 
     // setters
-    event TokenSet(TokenInterface _token, TokenImpInterface tokenImp);
+    event WBTCSet(WBTCInterface token);
 
-    function setToken(TokenInterface _token, TokenImpInterface _tokenImp) external onlyOwner {
+    function setWBTC(WBTCInterface _token) external onlyOwner {
         require(_token != address(0), "invalid _token address");
-        require(_tokenImp != address(0), "invalid _tokenImp address");
         token = _token;
-        token.setTokenImp(_tokenImp);
-        emit TokenSet(_token, _tokenImp);
+        emit WBTCSet(_token);
     }
 
     event MembersSet(MembersInterface members);
@@ -63,59 +41,53 @@ contract Controller is ControllerInterface, Withdrawable, WithdrawableOwner {
         emit MembersSet(members);
     }
 
-    event MinterSet(address minter);
+    event FactorySet(address factory);
 
-    function setMinter(address _minter) external onlyOwner {
-        require(_minter != address(0), "invalid _minter address");
-        minter = _minter;
-        emit MinterSet(minter);
+    function setFactory(address _factory) external onlyOwner {
+        require(_factory != address(0), "invalid _factory address");
+        factory = _factory;
+        emit FactorySet(factory);
     }
 
-    event BurnerSet(address burner);
-
-    function setBurner(address _burner) external onlyOwner {
-        require(_burner != address(0), "invalid _burner address");
-        burner = _burner;
-        emit BurnerSet(burner);
-    }
-
-    // onlyOwner actions on token
+    // only owner actions on token
     event Paused();
 
-    function pause() external onlyOwner {
-        token.getTokenImp().pause();
+    function pause() external onlyOwner returns (bool) {
+        token.pause();
         emit Paused();
+        return true;
     }
 
     event UnPaused();
 
-    function unpause() external onlyOwner {
-        token.getTokenImp().unpause();
+    function unpause() external onlyOwner returns (bool) {
+        token.unpause();
         emit UnPaused();
-    }
-
-    // only Minter/Burner actions on token
-    function mint(address to, uint amount) external onlyMinter returns (bool) {
-        require(to != address(0), "bad address");
-        require(token.getTokenImp().mint(to, amount), "minting failed.");
         return true;
     }
 
-    function burn(uint value) external onlyBurner returns (bool) {
-        token.getTokenImp().burn(value);
+    // only factory actions on token
+    function mint(address to, uint amount) external onlyFactory returns (bool) {
+        require(to != address(0), "bad address");
+        require(token.mint(to, amount), "minting failed.");
+        return true;
+    }
+
+    function burn(uint value) external onlyFactory returns (bool) {
+        token.burn(value);
         return true;
     }
 
     // all accessible
-    function isCustodian(address val) external view returns(bool) {
-        return members.isCustodian(val);
+    function isCustodian(address addr) external view returns(bool) {
+        return members.isCustodian(addr);
     }
 
-    function isMerchant(address val) external view returns(bool) {
-        return members.isMerchant(val);
+    function isMerchant(address addr) external view returns(bool) {
+        return members.isMerchant(addr);
     }
 
-    function getToken() external view returns(TokenInterface) {
+    function getWBTC() external view returns(WBTCInterface) {
         return token;
     }
 }

@@ -1,39 +1,71 @@
 pragma solidity 0.4.24;
 
 
-import "../utils/Withdrawable.sol";
+import "../utils/OwnableContract.sol";
 import "../utils/IndexedMapping.sol";
+import "../utils/OwnableContractOwner.sol";
 import "../factory/MembersInterface.sol";
 
 
-contract Members is MembersInterface, Withdrawable {
+contract Members is MembersInterface, OwnableContract, OwnableContractOwner {
 
     IndexedMapping public custodians;
     IndexedMapping public merchants;
 
-    function addCustodian(address custodian, bool add) external onlyOwner {
-        require(custodian != address(0), "invalid custodian address");
-        if (add) {
-            require(custodians.add(custodian), "custodian insert failed"); 
-        } else {
-            require(custodians.remove(custodian), "custodian remove failed");
-        }
+    constructor() public {
+        custodians = new IndexedMapping();
+        merchants = new IndexedMapping();
     }
 
-    function addMerchant(address merchant, bool add) external onlyOwner {
+    event CustodianAdd(address custodian);
+
+    function addCustodian(address custodian) external onlyOwner {
+        require(custodian != address(0), "invalid custodian address");
+        require(custodians.add(custodian), "custodian add failed"); 
+
+        emit CustodianAdd(custodian);
+    }
+
+    event CustodianRemove(address custodian);
+
+    function removeCustodian(address custodian) external onlyOwner {
+        require(custodian != address(0), "invalid custodian address");
+        require(custodians.remove(custodian), "custodian remove failed");
+
+        emit CustodianRemove(custodian);
+    }
+
+    event MerchantAdd(address custodian);
+
+    function addMerchant(address merchant) external onlyOwner {
         require(merchant != address(0), "invalid merchant address");
-        if (add) {
-            require(merchants.add(merchant), "merchant insert failed"); 
-        } else {
-            require(merchants.remove(merchant), "merchant remove failed");
-        }
+        require(merchants.add(merchant), "merchant add failed");
+
+        emit MerchantAdd(merchant);
     } 
 
-    function isCustodian(address val) external view returns(bool) {
-        return custodians.exists(val);
+    event MerchantRemove(address custodian);
+
+    function removeMerchant(address merchant) external onlyOwner {
+        require(merchant != address(0), "invalid merchant address");
+        require(merchants.remove(merchant), "merchant remove failed");
+
+        emit MerchantRemove(merchant);
     }
 
-    function isMerchant(address val) external view returns(bool) {
-        return merchants.exists(val);
+    function isCustodian(address addr) external view returns(bool) {
+        return custodians.exists(addr);
+    }
+
+    function isMerchant(address addr) external view returns(bool) {
+        return merchants.exists(addr);
+    }
+
+    function getMerchants() public view returns (address[]) {
+        return merchants.getValueList();
+    }
+
+    function getCustodians() public view returns (address[]) {
+        return custodians.getValueList();
     }
 }

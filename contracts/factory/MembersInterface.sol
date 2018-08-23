@@ -2,8 +2,10 @@ pragma solidity 0.4.24;
 
 
 interface MembersInterface {
-    function addCustodian(address custodian, bool add) external;
-    function addMerchant(address merchant, bool add) external;
-    function isCustodian(address val) external view returns(bool);
-    function isMerchant(address val) external view returns(bool);
+    function addCustodian(address custodian) external;
+    function removeCustodian(address custodian) external;
+    function addMerchant(address merchant) external;
+    function removeMerchant(address merchant) external;
+    function isCustodian(address addr) external view returns(bool);
+    function isMerchant(address addr) external view returns(bool);
 }
