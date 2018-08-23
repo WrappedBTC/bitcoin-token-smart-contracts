@@ -317,8 +317,7 @@ contract Factory is OwnableContract {
             request.btcDepositAddress,
             request.btcTxid,
             request.nonce,
-            request.timestamp,
-            request.status
+            request.timestamp
         ));
     }
 
