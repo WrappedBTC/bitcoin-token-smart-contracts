@@ -75,7 +75,7 @@ contract('Controller', function(accounts) {
         balance = await token.balanceOf(merchant1);
         assert.equal(balance, mintAmount - burnAmount, "bad balance after burning");
 
-        ///////////// confirm mint request ////////////
+        ///////////// confirm burn request ////////////
         let burnRequest0 = await factory.getBurnRequest(0);
         let burnRequest0Hash = burnRequest0[REQUEST_HASH_FIELD];
         let burnRequest0State = burnRequest0[REQUEST_STATUS_FIELD];
