@@ -5,6 +5,5 @@ import "openzeppelin-solidity/contracts/ownership/CanReclaimToken.sol";
 import "openzeppelin-solidity/contracts/ownership/HasNoEther.sol";
 
 
-    /* solhint-disable no-empty-blocks */
-contract OwnableContract is HasNoEther, CanReclaimToken, Claimable { }
-    /* solhint-enable no-empty-blocks */
+// empty block is used as this contract just inherits others.
+contract OwnableContract is HasNoEther, CanReclaimToken, Claimable { } /* solhint-disable-line no-empty-blocks */

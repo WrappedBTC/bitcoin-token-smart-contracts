@@ -22,7 +22,8 @@ contract Factory is OwnableContract {
     ControllerInterface public controller;
 
     // mapping between merchant to the corresponding custodian deposit address, used in the minting process.
-    // there is only one deposit address to all custodians.
+    // by using a different deposit address per merchant the custodian can identify which merchant deposited.
+    // all custodians are assumed to use the same deposit address per merchant.
     mapping(address=>string) public custodianBtcDepositAddress;
 
     // mapping between merchant to the its deposit address where btc should be moved to, used in the burning process.
@@ -71,7 +72,6 @@ contract Factory is OwnableContract {
         emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAdress, msg.sender); 
     }
 
-    /* solhint-disable not-rely-on-time */
     event MintRequestAdd(
         uint indexed nonce,
         address indexed requester,
@@ -87,7 +87,8 @@ contract Factory is OwnableContract {
         require(compareStrings(btcDepositAdress, custodianBtcDepositAddress[msg.sender]), "wrong btc deposit address");
 
         uint nonce = mintRequests.length;
-        uint timestamp = block.timestamp;
+        // timestamp is only used for data maintaining purpose, it is not relied on for critical logic
+        uint timestamp = block.timestamp; // solhint-disable-line not-rely-on-time
 
         Request memory request = Request({
             requester: msg.sender,
@@ -116,7 +117,8 @@ contract Factory is OwnableContract {
 
     function burn(uint amount) external onlyMerchant returns (bool) {
         uint nonce = burnRequests.length;
-        uint timestamp = block.timestamp;
+        // timestamp is only used for data maintaining purpose, it is not relied on for critical logic
+        uint timestamp = block.timestamp; // solhint-disable-line not-rely-on-time
         string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
         string memory btcTxid = ""; // set txid as empty since it is not known yet
 
@@ -138,7 +140,6 @@ contract Factory is OwnableContract {
 
         emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
     }
-    /* solhint-disable not-rely-on-time */
 
     function confirmMintRequest(bytes32 requestHash) external onlyCustodian {
         confirmOrRejectMintRequest(requestHash, true);
@@ -196,18 +197,18 @@ contract Factory is OwnableContract {
     }
 
     function getMintRequest(uint nonce)
-    public
-    view
-    returns(
-        uint requestNonce,
-        address requester,
-        uint amount,
-        string btcDepositAddress,
-        string btcTxid,
-        uint timestamp,
-        string status,
-        bytes32 requestHash
-    )
+        public
+        view
+        returns(
+            uint requestNonce,
+            address requester,
+            uint amount,
+            string btcDepositAddress,
+            string btcTxid,
+            uint timestamp,
+            string status,
+            bytes32 requestHash
+        )
     {
         Request memory request = mintRequests[nonce];
         string memory statusString = getStatusString(request.status); 
@@ -224,18 +225,18 @@ contract Factory is OwnableContract {
     }
 
     function getBurnRequest(uint nonce)
-    public
-    view
-    returns(
-        uint requestNonce,
-        address requester,
-        uint amount,
-        string btcDepositAddress,
-        string btcTxid,
-        uint timestamp,
-        string status,
-        bytes32 requestHash
-    )
+        public
+        view
+        returns(
+            uint requestNonce,
+            address requester,
+            uint amount,
+            string btcDepositAddress,
+            string btcTxid,
+            uint timestamp,
+            string status,
+            bytes32 requestHash
+        )
     {
         Request storage request = burnRequests[nonce];
         string memory statusString = getStatusString(request.status); 
