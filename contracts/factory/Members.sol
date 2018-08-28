@@ -7,15 +7,12 @@ import "../utils/OwnableContractOwner.sol";
 import "../factory/MembersInterface.sol";
 
 
-contract Members is MembersInterface, OwnableContract, OwnableContractOwner {
+contract Members is MembersInterface, OwnableContract {
 
-    IndexedMapping public custodians;
-    IndexedMapping public merchants;
+    using IndexedMapping for IndexedMapping.indexedMapping;
 
-    constructor() public {
-        custodians = new IndexedMapping();
-        merchants = new IndexedMapping();
-    }
+    IndexedMapping.indexedMapping internal custodians;
+    IndexedMapping.indexedMapping internal merchants;
 
     event CustodianAdd(address custodian);
 
@@ -35,7 +32,7 @@ contract Members is MembersInterface, OwnableContract, OwnableContractOwner {
         emit CustodianRemove(custodian);
     }
 
-    event MerchantAdd(address custodian);
+    event MerchantAdd(address merchant);
 
     function addMerchant(address merchant) external onlyOwner {
         require(merchant != address(0), "invalid merchant address");
@@ -61,8 +58,16 @@ contract Members is MembersInterface, OwnableContract, OwnableContractOwner {
         return merchants.exists(addr);
     }
 
+    function getMerchant(uint index) public view returns (address) {
+        return merchants.getValue(index);
+    }
+
     function getMerchants() public view returns (address[]) {
         return merchants.getValueList();
+    }
+
+    function getCustodian(uint index) public view returns (address) {
+        return custodians.getValue(index);
     }
 
     function getCustodians() public view returns (address[]) {

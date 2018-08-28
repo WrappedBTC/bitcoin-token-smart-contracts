@@ -13,9 +13,8 @@ import "../token/WBTCInterface.sol";
 contract WBTC is WBTCInterface, StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
     OwnableContract {
 
-    /* solhint-disable no-empty-blocks */
-    constructor() public DetailedERC20("Wrapped BTC", "WBTC", 8) { }
-    /* solhint-enable no-empty-blocks */
+    // empty block is used as the ctr just explicitly initializes the parent class. 
+    constructor() public DetailedERC20("Wrapped BTC", "WBTC", 8) { } // solhint-disable-line no-empty-blocks
 
     function burn(uint value) public onlyOwner {
         super.burn(value);

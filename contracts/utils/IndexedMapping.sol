@@ -1,53 +1,52 @@
 pragma solidity 0.4.24;
 
 
-import "../utils/OwnableContract.sol";
+library IndexedMapping {
 
+    struct indexedMapping {
+        mapping(address=>bool) valueExists;
+        mapping(address=>uint) valueIndex;
+        address[] valueList;
+    }
 
-contract IndexedMapping is OwnableContract {
+    function add(indexedMapping storage self, address val) internal returns(bool) {
+        if (exists(self, val)) return false;
 
-    mapping(address=>bool) public valueExists;
-    mapping(address=>uint) public valueIndex;
-    address[] public valueList;
-
-    function add(address val) public onlyOwner returns(bool) {
-        if (exists(val)) return false;
-
-        valueExists[val] = true;
-        valueIndex[val] = valueList.push(val);
+        self.valueExists[val] = true;
+        self.valueIndex[val] = self.valueList.push(val);
         return true;
     }
 
-    function remove(address val) public onlyOwner returns(bool) {
+    function remove(indexedMapping storage self, address val) internal returns(bool) {
         uint index;
         address lastVal;
 
-        if (!exists(val)) return false;
+        if (!exists(self, val)) return false;
 
-        index = valueIndex[val];
-        lastVal = valueList[valueList.length - 1];
+        index = self.valueIndex[val];
+        lastVal = self.valueList[self.valueList.length - 1];
 
         // remove val 
-        delete valueExists[val];
-        delete valueIndex[val];
+        delete self.valueExists[val];
+        delete self.valueIndex[val];
 
         // replace it with last val
-        valueList[index] = lastVal;
-        valueIndex[lastVal] = index;
-        valueList.length--;
+        self.valueList[index] = lastVal;
+        self.valueIndex[lastVal] = index;
+        self.valueList.length--;
 
         return true;
     }
 
-    function exists(address val) public view returns(bool) {
-        return valueExists[val];
+    function exists(indexedMapping storage self, address val) internal view returns(bool) {
+        return self.valueExists[val];
     }
 
-    function getValue(uint index) public view returns(address) {
-        return valueList[index];
+    function getValue(indexedMapping storage self, uint index) internal view returns(address) {
+        return self.valueList[index];
     }
 
-    function getValueList() public view returns(address[]) {
-        return valueList;
-    } 
+    function getValueList(indexedMapping storage self) internal view returns(address[]) {
+        return self.valueList;
+    }
 }
