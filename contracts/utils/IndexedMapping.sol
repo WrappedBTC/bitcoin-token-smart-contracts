@@ -13,7 +13,7 @@ library IndexedMapping {
         if (exists(self, val)) return false;
 
         self.valueExists[val] = true;
-        self.valueIndex[val] = self.valueList.push(val);
+        self.valueIndex[val] = self.valueList.push(val) - 1;
         return true;
     }
 
