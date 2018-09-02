@@ -21,7 +21,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
-    "openzeppelin-solidity": "1.11.0",
+    "openzeppelin-solidity": "1.12.0",
     "solc": "^0.4.24",
     "truffle": "^4.1.13",
     "web3": "^1.0.0-beta.35"
