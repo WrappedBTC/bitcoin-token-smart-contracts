@@ -1,95 +1,152 @@
-let WBTC = artifacts.require("./token/WBTC.sol")
-let Members = artifacts.require("./factory/Members.sol")
-let Controller = artifacts.require("./controller/Controller.sol") 
-let Factory = artifacts.require("./factory/Factory.sol")
+const { assertRevert } = require('../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
 
-const REQUEST_FROM_FIELD                = 0
-const REQUEST_AMOUNT_FIELD              = 1
-const REQUEST_BTCDEPOSITADDRESS_FIELD   = 2
-const REQUEST_BTCTXID_FIELD             = 3
-const REQUEST_NONCE_FIELD               = 4
-const REQUEST_TIMESTAMP_FIELD           = 5
-const REQUEST_STATUS_FIELD              = 6
-const REQUEST_HASH_FIELD                = 7
 
-const REQUEST_STATUS_PENDING            = "pending"
-const REQUEST_STATUS_CANCELED           = "canceled"
-const REQUEST_STATUS_APPROVED           = "approved"
-const REQUEST_STATUS_REJECTED           = "rejeted"
+const WBTC = artifacts.require("./token/WBTC.sol")
+const Members = artifacts.require("./factory/Members.sol")
+const Controller = artifacts.require("./controller/Controller.sol")
+const BasicTokenMock = artifacts.require('BasicTokenMock');
 
 contract('Controller', function(accounts) {
-    it("should test the controller.", async function () {
-        admin = accounts[0];
 
-        let token = await WBTC.new();
-        let controller = await Controller.new(token.address);
-        let factory = await Factory.new(controller.address);
-        let members = await Members.new();
+    const admin = accounts[0];
+    const other = accounts[1];
+    const factory = accounts[2]; // factory simulated as a regular address here
+    const otherFactory = accounts[3];
 
-        await controller.setFactory(factory.address)
+    let wbtc;
+    let controller;
+    let members;
+
+    beforeEach('as owner', async function () {
+        wbtc = await WBTC.new();
+        controller = await Controller.new(wbtc.address);
+        members = await Members.new();
+        otherToken = await BasicTokenMock.new(admin, 100);
+
+        await controller.setFactory(factory)
         await controller.setMembers(members.address)
 
-        await token.transferOwnership(controller.address)
-        // can transfer ownership for factory or members, but will be good only for pulling out funds
+        await wbtc.transferOwnership(controller.address)
+        await controller.callClaimOwnership(wbtc.address)
+    });
 
-        await controller.callClaimOwnership(token.address)
+    describe('as owner', function () {
+        const from = admin;
 
-        let custodian = accounts[1];
-        let merchant1 = accounts[2];
-        let merchant2 = accounts[3];
+        it("should setWBTC.", async function () {
+            assert.notEqual(wbtc.address, otherToken.address)
 
-        await members.addCustodian(custodian);
-        await members.addMerchant(merchant1);
-        await members.addMerchant(merchant2);
+            const tokenBefore = await controller.token.call();
+            assert.equal(tokenBefore, wbtc.address);
 
-        let custodianBtcDepositAdress = "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY"
-        await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAdress, {from:custodian});
+            await controller.setWBTC(otherToken.address)
 
-        ///////////// add mint request ////////////
-        let mintAmount = 123456;
-        let mintBtcTxid= "f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16"
-        let btcDepositAdress = await factory.custodianBtcDepositAddress(merchant1)
-        await factory.addMintRequest(mintAmount, mintBtcTxid, btcDepositAdress, {from:merchant1});
+            const tokenAfter = await controller.token.call();
+            assert.equal(tokenAfter, otherToken.address);
+        });
 
-        ///////////// confirm mint request ////////////
-        let mintRequest0 = await factory.getMintRequest(0);
-        let mintRequest0Hash = mintRequest0[REQUEST_HASH_FIELD];
-        let mintRequest0State = mintRequest0[REQUEST_STATUS_FIELD];
+        it("should check setWBTC event.", async function () {
+            const { logs } = await controller.setWBTC(otherToken.address);
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'WBTCSet');
+            assert.equal(logs[0].args.token, otherToken.address);
+        });
 
-        assert.equal(mintRequest0State, REQUEST_STATUS_PENDING, "bad status for request");
+        it("should setMembers.", async function () {
+            const otherMembers = await Members.new();
+            assert.notEqual(otherMembers.address, members.address)
 
-        await factory.confirmMintRequest(mintRequest0Hash, {from:custodian});
+            const membersBefore = await controller.members.call();
+            assert.equal(membersBefore, members.address);
 
-        balance = await token.balanceOf(merchant1);
-        assert.equal(balance, mintAmount, "bad balance after minting");
+            await controller.setMembers(otherMembers.address);
 
-        mintRequest0 = await factory.getMintRequest(0);
-        mintRequest0State = mintRequest0[REQUEST_STATUS_FIELD];
-        assert.equal(mintRequest0State, REQUEST_STATUS_APPROVED, "bad status for request");
+            const membersAfter = await controller.members.call();
+            assert.equal(membersAfter, otherMembers.address);
+        });
 
-        ///////////// burn ////////////
-        let burnAmount = mintAmount / 3;
-        await token.approve(factory.address, burnAmount, {from:merchant1});
+        it("should check setMembers event.", async function () {
+            const otherMembers = await Members.new();
+            const { logs } = await controller.setMembers(otherMembers.address);
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'MembersSet');
+            assert.equal(logs[0].args.members, otherMembers.address);
+        });
 
-        await factory.burn(burnAmount, {from:merchant1});
-        balance = await token.balanceOf(merchant1);
-        assert.equal(balance, mintAmount - burnAmount, "bad balance after burning");
+        it("should setFactory.", async function () {
+            assert.notEqual(otherFactory, factory)
 
-        ///////////// confirm burn request ////////////
-        let burnRequest0 = await factory.getBurnRequest(0);
-        let burnRequest0Hash = burnRequest0[REQUEST_HASH_FIELD];
-        let burnRequest0State = burnRequest0[REQUEST_STATUS_FIELD];
+            const factoryBefore = await controller.factory.call();
+            assert.equal(factoryBefore, factory);
 
-        assert.equal(burnRequest0State, REQUEST_STATUS_PENDING, "bad status for request");
+            await controller.setFactory(otherFactory);
 
-        let burnBtcTxid= "a3183ac596303b9d638783ca57adab3c75c605a6356abc91338530b9831e9b16"
-        await factory.confirmBurnRequest(burnRequest0Hash, burnBtcTxid, {from:custodian});
+            const factoryAfter = await controller.factory.call();
+            assert.equal(factoryAfter, otherFactory);
+        });
 
-        burnRequest0 = await factory.getBurnRequest(0);
-        burnRequest0State = burnRequest0[REQUEST_STATUS_FIELD];
-        assert.equal(burnRequest0State, REQUEST_STATUS_APPROVED, "bad status for request");
+        it("should check setFactory event.", async function () {
+            const { logs } = await controller.setFactory(otherFactory);
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'FactorySet');
+            assert.equal(logs[0].args.factory, otherFactory);
+        });
 
-        ///////////////////////
-        //TODO: check also cancel, reject, multiple requests
+        it("should check transfer succeeds when not paused.", async function () {
+            const balanceBefore = await wbtc.balanceOf(admin)
+            assert.equal(balanceBefore, 0);
+
+            await controller.mint(admin, 100, {from: factory});
+            const balanceAfterMint = await wbtc.balanceOf(admin);
+            assert.equal(balanceAfterMint, 100);
+
+            await wbtc.transfer(other, 20);
+            const balanceAfterTransfer = await wbtc.balanceOf(admin)
+            assert.equal(balanceAfterTransfer, 80);
+        });
+
+        it("should check transfer fails after pause.", async function () {
+            await controller.pause();
+            await controller.mint(admin, 100, {from: factory});
+            await assertRevert(wbtc.transfer(other, 20));
+        });
+
+        it("should check pause emits an event.", async function () {
+            const { logs } = await controller.pause();
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'Paused');
+        });
+
+        describe('unpause token', function () {
+            beforeEach('as owner', async function () {
+                //unpause token;
+                //check event
+            });
+            it("should check transfer succeeds.", async function () {});
+        });
+    });
+
+    describe('not as owner', function () {
+        it("setWBTC reverts.", async function () {});
+        it("setMembers reverts.", async function () {});
+        it("setFactory reverts.", async function () {});
+        it("pause reverts.", async function () {});
+        it("unpause reverts.", async function () {});
+    });
+
+    describe('as factory', function () {
+        it("mint.", async function () {});
+        it("burn.", async function () {});
+    });
+
+    describe('not as factory', function () {
+        it("mint reverts.", async function () {});
+        it("burn reverts.", async function () {});
+    });
+
+    describe('as anyone', function () {
+        it("check isCustodian.", async function () {});
+        it("check isMerchant.", async function () {});
+        it("check getWBTC.", async function () {});
     });
 });

@@ -5,7 +5,7 @@ require("chai")
     .use(require('chai-bignumber')(BigNumber))
     .should()
 
-let Helper = require("./helper.js");
+let Helper = require("../helper.js");
 
 const IndexedMappingWrapper = artifacts.require("./mock/IndexedMappingWrapper.sol");
 

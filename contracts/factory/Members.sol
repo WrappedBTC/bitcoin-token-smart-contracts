@@ -3,7 +3,6 @@ pragma solidity 0.4.24;
 
 import "../utils/OwnableContract.sol";
 import "../utils/IndexedMapping.sol";
-import "../utils/OwnableContractOwner.sol";
 import "../factory/MembersInterface.sol";
 
 

@@ -1,7 +1,6 @@
 const Token = artifacts.require("./token/WBTC.sol");
 const BasicTokenMock = artifacts.require('BasicTokenMock');
 
-
 const { shouldBehaveLikeOwnable } = require("./Ownable.behaviour.js")
 const { shouldBehaveLikeClaimable } = require("./Claimable.behaviour.js")
 const { shouldBehaveLikeCanReclaimToken } = require("./CanReclaimToken.behaviour.js")
@@ -9,20 +8,21 @@ const { shouldBehaveLikeHasNoEther } = require("./HasNoEther.behaviour.js")
 
 
 contract('Ownable', function (accounts) {
-  beforeEach(async function () {
-    this.ownable = await Token.new();
-  });
+    beforeEach(async function () {
+        this.ownable = await Token.new();
+    });
 
-  shouldBehaveLikeOwnable(accounts);
+    shouldBehaveLikeOwnable(accounts);
 });
+
 
 contract('Claimable', function (accounts) {
     beforeEach(async function () {
-      claimable = await Token.new();
+        claimable = await Token.new();
     });
 
     shouldBehaveLikeClaimable(accounts);
-  });
+});
 
 
 contract('CanReclaimToken', function (accounts) {
@@ -37,13 +37,12 @@ contract('CanReclaimToken', function (accounts) {
         await token.transfer(canReclaimToken.address, 10);
         const startBalance = await token.balanceOf(canReclaimToken.address);
         assert.equal(startBalance, 10);
-      });
+    });
 
     shouldBehaveLikeCanReclaimToken(accounts);
-  });
+});
 
 
 contract('HasNoEther', function (accounts) {
-
     shouldBehaveLikeHasNoEther(accounts);
-  });
+});
