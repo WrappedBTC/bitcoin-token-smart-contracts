@@ -58,11 +58,11 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
         return true;
     }
 
-    event UnPaused();
+    event Unpaused();
 
     function unpause() external onlyOwner returns (bool) {
         token.unpause();
-        emit UnPaused();
+        emit Unpaused();
         return true;
     }
 

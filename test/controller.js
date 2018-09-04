@@ -17,7 +17,7 @@ contract('Controller', function(accounts) {
     let controller;
     let members;
 
-    beforeEach('as owner', async function () {
+    beforeEach('create controller and transfer wbtc ownership to it', async function () {
         wbtc = await WBTC.new();
         controller = await Controller.new(wbtc.address);
         members = await Members.new();
@@ -117,36 +117,122 @@ contract('Controller', function(accounts) {
             assert.equal(logs[0].event, 'Paused');
         });
 
-        describe('unpause token', function () {
-            beforeEach('as owner', async function () {
-                //unpause token;
-                //check event
-            });
-            it("should check transfer succeeds.", async function () {});
+        it("should check transfer succeeds after unpause.", async function () {
+            await controller.mint(admin, 100, {from: factory});
+            const balanceBefore = await wbtc.balanceOf(admin)
+            assert.equal(balanceBefore, 100);
+
+            await controller.pause();
+            const isPausedBefore = await wbtc.paused.call();
+            assert.equal(isPausedBefore, true);
+
+            await assertRevert(wbtc.transfer(other, 20));
+
+            await controller.unpause();
+            const isPausedAfter = await wbtc.paused.call();
+            assert.equal(isPausedAfter, false);
+
+            await wbtc.transfer(other, 20);
+            const balanceAfterTransfer = await wbtc.balanceOf(admin)
+            assert.equal(balanceAfterTransfer, 80);
+        });
+
+        it("should check unpause emits an event.", async function () {
+            await controller.pause();
+            const { logs } = await controller.unpause();
+            assert.equal(logs.length, 1);
+            assert.equal(logs[0].event, 'Unpaused');
         });
     });
 
     describe('not as owner', function () {
-        it("setWBTC reverts.", async function () {});
-        it("setMembers reverts.", async function () {});
-        it("setFactory reverts.", async function () {});
-        it("pause reverts.", async function () {});
-        it("unpause reverts.", async function () {});
+        const from = other;
+
+        it("setWBTC reverts.", async function () {
+            await assertRevert(controller.setWBTC(otherToken.address, {from}));
+        });
+
+        it("setMembers reverts.", async function () {
+            await assertRevert(controller.setWBTC(otherToken.address, {from}));
+        });
+
+        it("setFactory reverts.", async function () {
+            await assertRevert(controller.setFactory(otherFactory, {from}));
+        });
+
+        it("pause reverts.", async function () {
+            await assertRevert(controller.pause({from}));
+        });
+
+        it("unpause reverts.", async function () {
+            await assertRevert(controller.unpause({from}));
+        });
     });
 
     describe('as factory', function () {
-        it("mint.", async function () {});
-        it("burn.", async function () {});
+        it("mint", async function () {
+            const balanceBefore = await wbtc.balanceOf(admin)
+            assert.equal(balanceBefore, 0);
+
+            await controller.mint(admin, 100, {from: factory});
+            const balanceAfter = await wbtc.balanceOf(admin);
+            assert.equal(balanceAfter, 100);
+        });
+
+        it("burn", async function () {
+            await controller.mint(factory, 100, {from: factory});
+
+            const balanceBefore = await wbtc.balanceOf(factory)
+            assert.equal(balanceBefore, 100);
+
+            // when burning through factory we only need to approve.
+            // here we transfer since checking internally.
+            await wbtc.transfer(controller.address, 20, {from: factory})
+            await controller.burn(20, {from: factory});
+            const balanceAfter = await wbtc.balanceOf(factory);
+            assert.equal(balanceAfter, 80);
+        });
     });
 
     describe('not as factory', function () {
-        it("mint reverts.", async function () {});
-        it("burn reverts.", async function () {});
+        it("mint reverts.", async function () {
+            await assertRevert(controller.mint(admin, 100, {other}));
+        });
+        it("burn reverts.", async function () {
+            await controller.mint(other, 100, {from: factory});
+
+            const balanceBefore = await wbtc.balanceOf(other)
+            assert.equal(balanceBefore, 100);
+
+            // when burning through factory we only need to approve.
+            // here we transfer since checking internally.
+            await wbtc.transfer(controller.address, 20, {from: other})
+            await assertRevert(controller.burn(20, {from: other}));
+        });
     });
 
     describe('as anyone', function () {
-        it("check isCustodian.", async function () {});
-        it("check isMerchant.", async function () {});
-        it("check getWBTC.", async function () {});
+        it("check isCustodian.", async function () {
+            const isCustodianBefore = await controller.isCustodian(other);
+            assert.equal(isCustodianBefore, false);
+
+            await members.addCustodian(other);
+            const isCustodianAfter = await controller.isCustodian(other);
+            assert.equal(isCustodianAfter, true);
+        });
+
+        it("check isMerchant.", async function () {
+            const isMerchantBefore = await controller.isMerchant(other);
+            assert.equal(isMerchantBefore, false);
+
+            await members.addMerchant(other);
+            const isMerchantAfter = await controller.isMerchant(other);
+            assert.equal(isMerchantAfter, true);
+        });
+
+        it("check getWBTC.", async function () {
+            const gotWBTC =  await controller.getWBTC();
+            assert.equal(gotWBTC, wbtc.address);
+        });
     });
 });
