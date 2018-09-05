@@ -1,4 +1,4 @@
-const { assertRevert } = require('../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
+const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
 
 
 const WBTC = artifacts.require("./token/WBTC.sol")
