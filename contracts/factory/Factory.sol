@@ -53,38 +53,38 @@ contract Factory is OwnableContract {
         _;
     }
 
-    event CustodianBtcDepositAddressSet(address indexed merchant, string btcDepositAdress, address sender);
+    event CustodianBtcDepositAddressSet(address indexed merchant, string btcDepositAddress, address sender);
 
-    function setCustodianBtcDepositAddress(address merchant, string btcDepositAdress) external onlyCustodian {
+    function setCustodianBtcDepositAddress(address merchant, string btcDepositAddress) external onlyCustodian {
         require(merchant != 0, "merchant address is 0");
-        require(!isEmptyString(btcDepositAdress), "invalid btc deposit address");
+        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
-        custodianBtcDepositAddress[merchant] = btcDepositAdress;
-        emit CustodianBtcDepositAddressSet(merchant, btcDepositAdress, msg.sender);
+        custodianBtcDepositAddress[merchant] = btcDepositAddress;
+        emit CustodianBtcDepositAddressSet(merchant, btcDepositAddress, msg.sender);
     }
 
-    event MerchantBtcDepositAddressSet(address indexed merchant, string btcDepositAdress, address sender);
+    event MerchantBtcDepositAddressSet(address indexed merchant, string btcDepositAddress);
 
-    function setMerchantBtcDepositAddress(string btcDepositAdress) external onlyMerchant {
-        require(!isEmptyString(btcDepositAdress), "invalid btc deposit address");
+    function setMerchantBtcDepositAddress(string btcDepositAddress) external onlyMerchant {
+        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
-        merchantBtcDepositAddress[msg.sender] = btcDepositAdress;
-        emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAdress, msg.sender); 
+        merchantBtcDepositAddress[msg.sender] = btcDepositAddress;
+        emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAddress); 
     }
 
     event MintRequestAdd(
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAdress,
+        string btcDepositAddress,
         string btcTxid,
         uint timestamp,
         bytes32 requestHash
     );
 
-    function addMintRequest(uint amount, string btcTxid, string btcDepositAdress) external onlyMerchant {
-        require(!isEmptyString(btcDepositAdress), "invalid btc deposit address"); 
-        require(compareStrings(btcDepositAdress, custodianBtcDepositAddress[msg.sender]), "wrong btc deposit address");
+    function addMintRequest(uint amount, string btcTxid, string btcDepositAddress) external onlyMerchant {
+        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address"); 
+        require(compareStrings(btcDepositAddress, custodianBtcDepositAddress[msg.sender]), "wrong btc deposit address");
 
         uint nonce = mintRequests.length;
         // timestamp is only used for data maintaining purpose, it is not relied on for critical logic
@@ -93,7 +93,7 @@ contract Factory is OwnableContract {
         Request memory request = Request({
             requester: msg.sender,
             amount: amount,
-            btcDepositAddress: btcDepositAdress,
+            btcDepositAddress: btcDepositAddress,
             btcTxid: btcTxid,
             nonce: nonce,
             timestamp: timestamp,
@@ -103,7 +103,7 @@ contract Factory is OwnableContract {
         mintRequestNonce[requestHash] = nonce; 
         mintRequests.push(request);
 
-        emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAdress, btcTxid, timestamp, requestHash);
+        emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAddress, btcTxid, timestamp, requestHash);
     }
 
     event Burned(
@@ -115,11 +115,13 @@ contract Factory is OwnableContract {
         bytes32 requestHash
     );
 
-    function burn(uint amount) external onlyMerchant returns (bool) {
+    function burn(uint amount) external onlyMerchant {
         uint nonce = burnRequests.length;
         // timestamp is only used for data maintaining purpose, it is not relied on for critical logic
         uint timestamp = block.timestamp; // solhint-disable-line not-rely-on-time
         string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
+
+        require(!isEmptyString(btcDepositAddress), "merchant btc deposit address was not set"); 
         string memory btcTxid = ""; // set txid as empty since it is not known yet
 
         Request memory request = Request({
