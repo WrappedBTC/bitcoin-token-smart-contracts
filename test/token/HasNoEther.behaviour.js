@@ -27,41 +27,6 @@ function shouldBehaveLikeHasNoEther (accounts) {
       }),
     );
   });
-
-  it('should allow owner to reclaim ether', async function () {
-    // Create contract
-    const hasNoEther = await HasNoEtherTest.new();
-    const startBalance = await ethGetBalance(hasNoEther.address);
-    assert.equal(startBalance, 0);
-
-    // Force ether into it
-    const forceEther = await ForceEther.new({ value: amount });
-    await forceEther.destroyAndSend(hasNoEther.address);
-    const forcedBalance = await ethGetBalance(hasNoEther.address);
-    assert.equal(forcedBalance, amount);
-
-    // Reclaim
-    const ownerStartBalance = await ethGetBalance(accounts[0]);
-    await hasNoEther.reclaimEther();
-    const ownerFinalBalance = await ethGetBalance(accounts[0]);
-    const finalBalance = await ethGetBalance(hasNoEther.address);
-    assert.equal(finalBalance, 0);
-    assert.isTrue(ownerFinalBalance.greaterThan(ownerStartBalance));
-  });
-
-  it('should allow only owner to reclaim ether', async function () {
-    // Create contract
-    const hasNoEther = await HasNoEtherTest.new({ from: accounts[0] });
-
-    // Force ether into it
-    const forceEther = await ForceEther.new({ value: amount });
-    await forceEther.destroyAndSend(hasNoEther.address);
-    const forcedBalance = await ethGetBalance(hasNoEther.address);
-    assert.equal(forcedBalance, amount);
-
-    // Reclaim
-    await expectThrow(hasNoEther.reclaimEther({ from: accounts[1] }));
-  });
 };
 
 module.exports = { shouldBehaveLikeHasNoEther };

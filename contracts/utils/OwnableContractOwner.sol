@@ -28,11 +28,4 @@ contract OwnableContractOwner is OwnableContract {
         ownedContract.reclaimToken(_token);
         emit CalledReclaimToken(ownedContract, _token);
     }
-
-    event CalledReclaimEther(OwnableContract ownedContract);
-
-    function callReclaimEther(OwnableContract ownedContract) external onlyOwner { 
-        ownedContract.reclaimEther();
-        emit CalledReclaimEther(ownedContract);
-    }
 }

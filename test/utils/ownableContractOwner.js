@@ -106,10 +106,6 @@ contract('OwnableContractOwner', function(accounts) {
             assert.equal(logs[0].args.ownedContract, ownableContract.address);
             assert.equal(logs[0].args._token, token.address);
         });
-
-        xit('should check callReclaimEther reclaims ether', async function () {});
-
-        xit('should check callReclaimEther emits an event', async function () { });
     });
 
     describe('not as owner of the ownable contract', function () {
@@ -127,8 +123,6 @@ contract('OwnableContractOwner', function(accounts) {
             await token.transfer(ownableContract.address, amount);
             await assertRevert(ownableContractOwner.callReclaimToken(ownableContract.address, token.address, {from} ));
         });
-
-        xit('should check callReclaimEther reverts', async function () { });
     });
 });
 
