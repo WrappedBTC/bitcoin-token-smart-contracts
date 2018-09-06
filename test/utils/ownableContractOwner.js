@@ -1,9 +1,7 @@
 const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
 const { ethSendTransaction, ethGetBalance } = require('../../node_modules/openzeppelin-solidity/test/helpers/web3');
 
-
 const BigNumber = web3.BigNumber
-const ForceEther = artifacts.require('ForceEther');
 
 
 require("chai")

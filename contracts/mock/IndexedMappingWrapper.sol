@@ -6,15 +6,15 @@ import "../utils/IndexedMapping.sol";
 
 contract IndexedMappingWrapper {
 
-    using IndexedMapping for IndexedMapping.indexedMapping;
+    using IndexedMapping for IndexedMapping.Data;
 
-    IndexedMapping.indexedMapping internal data;
+    IndexedMapping.Data internal data;
 
-    function add(address val) external returns (bool){
+    function add(address val) external returns (bool) {
         return data.add(val);
     }
 
-    function remove(address val) external returns (bool){
+    function remove(address val) external returns (bool) {
         return data.remove(val);
     }
  

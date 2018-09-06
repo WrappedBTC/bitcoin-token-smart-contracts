@@ -440,7 +440,6 @@ contract('Factory', function(accounts) {
             assert.equal(logs[0].event, 'MintConfirmed');
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
-            assert.equal(logs[0].args.confirm, true);
             assert.equal(logs[0].args.amount, amount);
             assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
             assert.equal(logs[0].args.btcTxid, btcTxid0);
@@ -511,10 +510,9 @@ contract('Factory', function(accounts) {
             const hashAfter= requestAfter[REQUEST_HASH_FIELD];
 
             assert.equal(logs.length, 1);
-            assert.equal(logs[0].event, 'MintConfirmed');
+            assert.equal(logs[0].event, 'MintRejected');
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
-            assert.equal(logs[0].args.confirm, false);
             assert.equal(logs[0].args.amount, amount);
             assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
             assert.equal(logs[0].args.btcTxid, btcTxid0);

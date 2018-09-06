@@ -3,13 +3,13 @@ pragma solidity 0.4.24;
 
 library IndexedMapping {
 
-    struct indexedMapping {
+    struct Data {
         mapping(address=>bool) valueExists;
         mapping(address=>uint) valueIndex;
         address[] valueList;
     }
 
-    function add(indexedMapping storage self, address val) internal returns(bool) {
+    function add(Data storage self, address val) internal returns(bool) {
         if (exists(self, val)) return false;
 
         self.valueExists[val] = true;
@@ -17,7 +17,7 @@ library IndexedMapping {
         return true;
     }
 
-    function remove(indexedMapping storage self, address val) internal returns(bool) {
+    function remove(Data storage self, address val) internal returns(bool) {
         uint index;
         address lastVal;
 
@@ -38,15 +38,15 @@ library IndexedMapping {
         return true;
     }
 
-    function exists(indexedMapping storage self, address val) internal view returns(bool) {
+    function exists(Data storage self, address val) internal view returns(bool) {
         return self.valueExists[val];
     }
 
-    function getValue(indexedMapping storage self, uint index) internal view returns(address) {
+    function getValue(Data storage self, uint index) internal view returns(address) {
         return self.valueList[index];
     }
 
-    function getValueList(indexedMapping storage self) internal view returns(address[]) {
+    function getValueList(Data storage self) internal view returns(address[]) {
         return self.valueList;
     }
 }
