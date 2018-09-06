@@ -3,16 +3,15 @@ pragma solidity 0.4.24;
 
 import "../utils/OwnableContract.sol";
 import "../utils/IndexedMapping.sol";
-import "../utils/OwnableContractOwner.sol";
 import "../factory/MembersInterface.sol";
 
 
 contract Members is MembersInterface, OwnableContract {
 
-    using IndexedMapping for IndexedMapping.indexedMapping;
+    using IndexedMapping for IndexedMapping.Data;
 
-    IndexedMapping.indexedMapping internal custodians;
-    IndexedMapping.indexedMapping internal merchants;
+    IndexedMapping.Data internal custodians;
+    IndexedMapping.Data internal merchants;
 
     event CustodianAdd(address custodian);
 
