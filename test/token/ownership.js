@@ -1,11 +1,10 @@
-const Token = artifacts.require("./token/WBTC.sol");
-const BasicTokenMock = artifacts.require('BasicTokenMock');
-
 const { shouldBehaveLikeOwnable } = require("./Ownable.behaviour.js")
 const { shouldBehaveLikeClaimable } = require("./Claimable.behaviour.js")
 const { shouldBehaveLikeCanReclaimToken } = require("./CanReclaimToken.behaviour.js")
 const { shouldBehaveLikeHasNoEther } = require("./HasNoEther.behaviour.js")
 
+const Token = artifacts.require("./token/WBTC.sol");
+const BasicTokenMock = artifacts.require('BasicTokenMock');
 
 contract('Ownable', function (accounts) {
     beforeEach(async function () {

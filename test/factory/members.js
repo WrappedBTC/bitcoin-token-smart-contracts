@@ -1,11 +1,12 @@
 const BigNumber = web3.BigNumber
 
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
+
 require("chai")
     .use(require("chai-as-promised"))
     .use(require('chai-bignumber')(BigNumber))
     .should()
-
-let Helper = require("../helper.js");
 
 const Members = artifacts.require("./factory/Members.sol");
 
@@ -46,25 +47,12 @@ contract('Members', function(accounts) {
     });
 
     it("add a custodian not as owner.", async function () {
-        try {
-            await members.addCustodian(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(members.addCustodian(user1, {from:user1}));
     });
 
     it("remove a custodian not as owner.", async function () {
-
         await members.addCustodian(user1);
-
-        try {
-            await members.removeCustodian(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
-        
+        await expectThrow(members.removeCustodian(user1, {from:user1}));
     });
 
     it("add a few custodians and get the entire list.", async function () {
@@ -117,25 +105,12 @@ contract('Members', function(accounts) {
     });
 
     it("add a merchant not as owner.", async function () {
-        try {
-            await members.addMerchant(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(members.addMerchant(user1, {from:user1}));
     });
 
     it("remove a merchant not as owner.", async function () {
-
         await members.addMerchant(user1);
-
-        try {
-            await members.removeMerchant(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
-        
+        await expectThrow(members.removeMerchant(user1, {from:user1}));
     });
 
     it("add a few merchants and get the entire list.", async function () {

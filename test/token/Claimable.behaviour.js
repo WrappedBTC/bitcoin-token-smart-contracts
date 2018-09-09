@@ -1,4 +1,5 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { assertRevert } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/assertRevert');
 
 const Claimable = artifacts.require('Claimable');
 

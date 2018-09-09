@@ -1,11 +1,12 @@
 const BigNumber = web3.BigNumber
 
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
+
 require("chai")
     .use(require("chai-as-promised"))
     .use(require('chai-bignumber')(BigNumber))
     .should()
-
-let Helper = require("../helper.js");
 
 const IndexedMappingWrapper = artifacts.require("./mock/IndexedMappingWrapper.sol");
 
@@ -49,13 +50,7 @@ contract('IndexedMappingWrapper', function(accounts) {
     it("one add and one remove, check reading index 0 reverts.", async function () {
         await indexedMappingWrapper.add(user1);
         await indexedMappingWrapper.remove(user1);
-
-        try {
-            exists = await indexedMappingWrapper.getValue(0);
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(indexedMappingWrapper.getValue(0));
     });
 
     it("one add and one remove, check value list is empty.", async function () {
@@ -134,12 +129,7 @@ contract('IndexedMappingWrapper', function(accounts) {
         await indexedMappingWrapper.remove(user2);
         await indexedMappingWrapper.remove(user3);
 
-        try {
-            exists = await indexedMappingWrapper.getValue(0);
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(indexedMappingWrapper.getValue(0));
     });
 
     it("multiple (3) adds and remove all, check value list is empty.", async function () {
@@ -184,12 +174,7 @@ contract('IndexedMappingWrapper', function(accounts) {
         v0 = await indexedMappingWrapper.getValue(0);
         v0.should.equal(user2);
 
-        try {
-            v1 = await indexedMappingWrapper.getValue(1);
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(indexedMappingWrapper.getValue(1));
     });
 
     it("multiple (3) adds and remove some (2), check value list.", async function () {

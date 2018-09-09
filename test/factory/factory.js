@@ -1,6 +1,7 @@
 const BigNumber = web3.BigNumber
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-const { expectThrow } = require('../../node_modules/openzeppelin-solidity/test/helpers/expectThrow');
+
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -85,7 +86,7 @@ contract('Factory', function(accounts) {
         });
 
         it("setMerchantBtcDepositAddress with empty string reverts", async function () {
-            await assertRevert(factory.setMerchantBtcDepositAddress("", {from}));
+            await expectThrow(factory.setMerchantBtcDepositAddress("", {from}));
         });
 
         it("setMerchantBtcDepositAddress emits event", async function () {
@@ -120,15 +121,15 @@ contract('Factory', function(accounts) {
         });
 
         it("addMintRequest with empty btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, "", {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, "", {from}));
         });
 
         it("addMintRequest with non existing btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, otherBtcAddress, {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, otherBtcAddress, {from}));
         });
 
         it("addMintRequest with other merchant's custodian btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from}));
         });
 
         it("addMintRequest sets request status to pending", async function () {
@@ -176,28 +177,28 @@ contract('Factory', function(accounts) {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.cancelMintRequest(hash, {from});
-            await assertRevert (factory.cancelMintRequest(hash, {from}));
+            await expectThrow (factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already confirmed request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.confirmMintRequest(hash, {from: custodian0});
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already rejected request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.rejectMintRequest(hash, {from: custodian0});
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
 
         });
 
         it("cancelMintRequest for another merchant's request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from: merchant1});
             const hash = logs[0].args.requestHash;
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest with unknown request hash fails", async function () {
@@ -206,7 +207,7 @@ contract('Factory', function(accounts) {
             const hash = logs[0].args.requestHash;
             const alteredHash = "0x0123456789012345678901234567890123456789012345678901234567890123456789012345"
 
-            await assertRevert(factory.cancelMintRequest(alteredHash, {from}));
+            await expectThrow(factory.cancelMintRequest(alteredHash, {from}));
             await factory.cancelMintRequest(hash, {from})
         });
 

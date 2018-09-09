@@ -1,4 +1,4 @@
-This repository has the contracts that implement the wrapped bitcoin token.
+This repository has the contracts that implement the wrapped btc token.
 
 # Installation
 
@@ -7,3 +7,11 @@ This repository has the contracts that implement the wrapped bitcoin token.
 # Compilation
 
     node_modules/.bin/truffle compile
+
+# Testing
+
+    node_modules/.bin/truffle test
+
+# Testing Coverage
+
+    node node_modules/.bin/solidity-coverage

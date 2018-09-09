@@ -1,5 +1,5 @@
-const { expectThrow } = require('../../node_modules/openzeppelin-solidity/test/helpers/expectThrow');
-
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
 
 function shouldBehaveLikeCanReclaimToken(accounts) {
 

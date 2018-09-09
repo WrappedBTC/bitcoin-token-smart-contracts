@@ -1,5 +1,5 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
 
 const WBTC = artifacts.require("./token/WBTC.sol")
 const Members = artifacts.require("./factory/Members.sol")
@@ -108,7 +108,7 @@ contract('Controller', function(accounts) {
         it("should check transfer fails after pause.", async function () {
             await controller.pause();
             await controller.mint(admin, 100, {from: factory});
-            await assertRevert(wbtc.transfer(other, 20));
+            await expectThrow(wbtc.transfer(other, 20));
         });
 
         it("should check pause emits an event.", async function () {
@@ -126,7 +126,7 @@ contract('Controller', function(accounts) {
             const isPausedBefore = await wbtc.paused.call();
             assert.equal(isPausedBefore, true);
 
-            await assertRevert(wbtc.transfer(other, 20));
+            await expectThrow(wbtc.transfer(other, 20));
 
             await controller.unpause();
             const isPausedAfter = await wbtc.paused.call();
@@ -149,23 +149,23 @@ contract('Controller', function(accounts) {
         const from = other;
 
         it("setWBTC reverts.", async function () {
-            await assertRevert(controller.setWBTC(otherToken.address, {from}));
+            await expectThrow(controller.setWBTC(otherToken.address, {from}));
         });
 
         it("setMembers reverts.", async function () {
-            await assertRevert(controller.setWBTC(otherToken.address, {from}));
+            await expectThrow(controller.setWBTC(otherToken.address, {from}));
         });
 
         it("setFactory reverts.", async function () {
-            await assertRevert(controller.setFactory(otherFactory, {from}));
+            await expectThrow(controller.setFactory(otherFactory, {from}));
         });
 
         it("pause reverts.", async function () {
-            await assertRevert(controller.pause({from}));
+            await expectThrow(controller.pause({from}));
         });
 
         it("unpause reverts.", async function () {
-            await assertRevert(controller.unpause({from}));
+            await expectThrow(controller.unpause({from}));
         });
     });
 
@@ -196,7 +196,7 @@ contract('Controller', function(accounts) {
 
     describe('not as factory', function () {
         it("mint reverts.", async function () {
-            await assertRevert(controller.mint(admin, 100, {other}));
+            await expectThrow(controller.mint(admin, 100, {other}));
         });
         it("burn reverts.", async function () {
             await controller.mint(other, 100, {from: factory});
@@ -207,7 +207,7 @@ contract('Controller', function(accounts) {
             // when burning through factory we only need to approve.
             // here we transfer since checking internally.
             await wbtc.transfer(controller.address, 20, {from: other})
-            await assertRevert(controller.burn(20, {from: other}));
+            await expectThrow(controller.burn(20, {from: other}));
         });
     });
 
