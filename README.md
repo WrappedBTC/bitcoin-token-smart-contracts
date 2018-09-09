@@ -15,3 +15,7 @@ This repository has the contracts that implement the wrapped btc token.
 # Testing Coverage
 
     node node_modules/.bin/solidity-coverage
+
+# Deployment
+
+    node scripts/deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url]
