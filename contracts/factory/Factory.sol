@@ -106,6 +106,20 @@ contract Factory is OwnableContract {
         emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAddress, btcTxid, timestamp, requestHash);
     }
 
+    event MintRequestCancel(uint indexed nonce, address indexed requester, bytes32 requestHash);
+
+    function cancelMintRequest(bytes32 requestHash) external onlyMerchant {
+        uint nonce;
+        Request memory request;
+
+        (nonce, request) = getNonceAndMintRequest(requestHash);
+
+        require(msg.sender == request.requester, "cancel sender is different than pending request initiator");
+        mintRequests[nonce].status = RequestStatus.CANCELED;
+
+        emit MintRequestCancel(nonce, msg.sender, requestHash);
+    }
+
     event Burned(
         uint indexed nonce,
         address indexed requester,
@@ -235,20 +249,6 @@ contract Factory is OwnableContract {
         );
     }
 
-    event MintRequestCancel(uint indexed nonce, address indexed requester, bytes32 requestHash);
-
-    function cancelMintRequest(bytes32 requestHash) external onlyMerchant {
-        uint nonce;
-        Request memory request;
-
-        (nonce, request) = getNonceAndMintRequest(requestHash);
-
-        require(msg.sender == request.requester, "cancel sender is different than pending request initiator");
-        mintRequests[nonce].status = RequestStatus.CANCELED;
-
-        emit MintRequestCancel(nonce, msg.sender, requestHash);
-    }
-
     function getMintRequest(uint nonce)
         public
         view
@@ -331,17 +331,17 @@ contract Factory is OwnableContract {
         require(requestHash != 0, "request hash is 0");
         nonce = mintRequestNonce[requestHash];
         request = mintRequests[nonce];
-        validataeRequest(request, requestHash);
+        validateRequest(request, requestHash);
     }
 
     function getNonceAndBurnRequest(bytes32 requestHash) internal view returns (uint nonce, Request memory request) {
         require(requestHash != 0, "request hash is 0");
         nonce = burnRequestNonce[requestHash];
         request = burnRequests[nonce];
-        validataeRequest(request, requestHash);
+        validateRequest(request, requestHash);
     }
 
-    function validataeRequest(Request memory request, bytes32 requestHash) internal pure {
+    function validateRequest(Request memory request, bytes32 requestHash) internal pure {
         require(request.status == RequestStatus.PENDING, "request is not pending");
         require(requestHash == calcRequestHash(request), "given request hash does not match a pending request");
     }
