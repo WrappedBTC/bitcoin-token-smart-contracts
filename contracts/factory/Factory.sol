@@ -56,21 +56,30 @@ contract Factory is OwnableContract {
 
     event CustodianBtcDepositAddressSet(address indexed merchant, string btcDepositAddress, address sender);
 
-    function setCustodianBtcDepositAddress(address merchant, string btcDepositAddress) external onlyCustodian {
+    function setCustodianBtcDepositAddress(
+        address merchant,
+        string btcDepositAddress
+    )
+        external
+        onlyCustodian
+        returns (bool) 
+    {
         require(merchant != 0, "merchant address is 0");
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
         custodianBtcDepositAddress[merchant] = btcDepositAddress;
         emit CustodianBtcDepositAddressSet(merchant, btcDepositAddress, msg.sender);
+        return true;
     }
 
     event MerchantBtcDepositAddressSet(address indexed merchant, string btcDepositAddress);
 
-    function setMerchantBtcDepositAddress(string btcDepositAddress) external onlyMerchant {
+    function setMerchantBtcDepositAddress(string btcDepositAddress) external onlyMerchant returns (bool) {
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
         merchantBtcDepositAddress[msg.sender] = btcDepositAddress;
-        emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAddress); 
+        emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAddress);
+        return true; 
     }
 
     event MintRequestAdd(
@@ -83,7 +92,15 @@ contract Factory is OwnableContract {
         bytes32 requestHash
     );
 
-    function addMintRequest(uint amount, string btcTxid, string btcDepositAddress) external onlyMerchant {
+    function addMintRequest(
+        uint amount,
+        string btcTxid,
+        string btcDepositAddress
+    )
+        external
+        onlyMerchant
+        returns (bool)
+    {
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address"); 
         require(compareStrings(btcDepositAddress, custodianBtcDepositAddress[msg.sender]), "wrong btc deposit address");
 
@@ -105,11 +122,12 @@ contract Factory is OwnableContract {
         mintRequests.push(request);
 
         emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAddress, btcTxid, timestamp, requestHash);
+        return true;
     }
 
     event MintRequestCancel(uint indexed nonce, address indexed requester, bytes32 requestHash);
 
-    function cancelMintRequest(bytes32 requestHash) external onlyMerchant {
+    function cancelMintRequest(bytes32 requestHash) external onlyMerchant returns (bool) {
         uint nonce;
         Request memory request;
 
@@ -119,6 +137,7 @@ contract Factory is OwnableContract {
         mintRequests[nonce].status = RequestStatus.CANCELED;
 
         emit MintRequestCancel(nonce, msg.sender, requestHash);
+        return true;
     }
 
     event Burned(
@@ -130,14 +149,14 @@ contract Factory is OwnableContract {
         bytes32 requestHash
     );
 
-    function burn(uint amount) external onlyMerchant {
+    function burn(uint amount) external onlyMerchant returns (bool) {
         string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
         require(!isEmptyString(btcDepositAddress), "merchant btc deposit address was not set"); 
 
         uint nonce = burnRequests.length;
         uint timestamp = getTimestamp();
 
-        string memory btcTxid = ""; // set txid as empty since it is not known yet
+        string memory btcTxid = ""; // set txid as empty since it is not known yet.
 
         Request memory request = Request({
             requester: msg.sender,
@@ -157,6 +176,7 @@ contract Factory is OwnableContract {
         require(controller.burn(amount), "burn failed");
 
         emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
+        return true;
     }
 
     event MintConfirmed(
@@ -169,7 +189,7 @@ contract Factory is OwnableContract {
         bytes32 requestHash
     );
 
-    function confirmMintRequest(bytes32 requestHash) external onlyCustodian {
+    function confirmMintRequest(bytes32 requestHash) external onlyCustodian returns (bool) {
         uint nonce;
         Request memory request;
 
@@ -187,7 +207,7 @@ contract Factory is OwnableContract {
             request.timestamp,
             requestHash
         );
-        
+        return true;
     }
 
     event MintRejected(
@@ -200,7 +220,7 @@ contract Factory is OwnableContract {
         bytes32 requestHash
     );
 
-    function rejectMintRequest(bytes32 requestHash) external onlyCustodian {
+    function rejectMintRequest(bytes32 requestHash) external onlyCustodian returns (bool) {
         uint nonce;
         Request memory request;
 
@@ -217,6 +237,7 @@ contract Factory is OwnableContract {
             request.timestamp,
             requestHash
         );
+        return true;
     }
 
     event BurnConfirmed(
@@ -229,7 +250,7 @@ contract Factory is OwnableContract {
         bytes32 inputRequestHash
     );
 
-    function confirmBurnRequest(bytes32 requestHash, string btcTxid) external onlyCustodian {
+    function confirmBurnRequest(bytes32 requestHash, string btcTxid) external onlyCustodian returns (bool) {
         uint nonce;
         Request memory request;
 
@@ -248,12 +269,13 @@ contract Factory is OwnableContract {
             request.timestamp,
             requestHash
         );
+        return true;
     }
 
     function getMintRequest(uint nonce)
         public
         view
-        returns(
+        returns (
             uint requestNonce,
             address requester,
             uint amount,
@@ -280,7 +302,7 @@ contract Factory is OwnableContract {
     function getBurnRequest(uint nonce)
         public
         view
-        returns(
+        returns (
             uint requestNonce,
             address requester,
             uint amount,
@@ -321,9 +343,8 @@ contract Factory is OwnableContract {
     }
 
     function getTimestamp() internal view returns (uint) {
-        //timestamp is only used for data maintaining purpose, it is not relied on for critical logic
+        //timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
         return block.timestamp; // solhint-disable-line not-rely-on-time
-        
     }
 
     function getPendingMintRequest(bytes32 requestHash) internal view returns (uint nonce, Request memory request) {

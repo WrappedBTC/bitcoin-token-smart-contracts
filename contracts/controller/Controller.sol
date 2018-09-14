@@ -27,26 +27,29 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     // setters
     event WBTCSet(WBTCInterface token);
 
-    function setWBTC(WBTCInterface _token) external onlyOwner {
+    function setWBTC(WBTCInterface _token) external onlyOwner returns (bool) {
         require(_token != address(0), "invalid _token address");
         token = _token;
         emit WBTCSet(_token);
+        return true;
     }
 
     event MembersSet(MembersInterface members);
 
-    function setMembers(MembersInterface _members) external onlyOwner {
+    function setMembers(MembersInterface _members) external onlyOwner returns (bool) {
         require(_members != address(0), "invalid _members address");
         members = _members;
         emit MembersSet(members);
+        return true;
     }
 
     event FactorySet(address factory);
 
-    function setFactory(address _factory) external onlyOwner {
+    function setFactory(address _factory) external onlyOwner returns (bool) {
         require(_factory != address(0), "invalid _factory address");
         factory = _factory;
         emit FactorySet(factory);
+        return true;
     }
 
     // only owner actions on token
@@ -79,15 +82,15 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     }
 
     // all accessible
-    function isCustodian(address addr) external view returns(bool) {
+    function isCustodian(address addr) external view returns (bool) {
         return members.isCustodian(addr);
     }
 
-    function isMerchant(address addr) external view returns(bool) {
+    function isMerchant(address addr) external view returns (bool) {
         return members.isMerchant(addr);
     }
 
-    function getWBTC() external view returns(WBTCInterface) {
+    function getWBTC() external view returns (WBTCInterface) {
         return token;
     }
 }

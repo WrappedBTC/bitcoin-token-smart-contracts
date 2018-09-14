@@ -18,15 +18,15 @@ contract IndexedMappingWrapper {
         return data.remove(val);
     }
  
-    function exists(address val) external view returns(bool) {
+    function exists(address val) external view returns (bool) {
         return data.exists(val);
     }
 
-    function getValue(uint index) external view returns(address) {
+    function getValue(uint index) external view returns (address) {
         return data.getValue(index);
     }
 
-    function getValueList() external view returns(address[]) {
+    function getValueList() external view returns (address[]) {
         return data.getValueList();
     }
 }
