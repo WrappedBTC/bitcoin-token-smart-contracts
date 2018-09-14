@@ -13,6 +13,11 @@ contract Members is MembersInterface, OwnableContract {
     IndexedMapping.Data internal custodians;
     IndexedMapping.Data internal merchants;
 
+    constructor(address _owner) public {
+        require(_owner != address(0), "invalid _owner address");
+        owner = _owner;
+    }
+
     event CustodianAdd(address custodian);
 
     function addCustodian(address custodian) external onlyOwner {

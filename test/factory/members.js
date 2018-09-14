@@ -20,7 +20,7 @@ contract('Members', function(accounts) {
         user4 = accounts[4];
         user5 = accounts[5];
         user6 = accounts[6];
-        members = await Members.new();
+        members = await Members.new(admin);
     });
 
     it("add a custodian.", async function () {

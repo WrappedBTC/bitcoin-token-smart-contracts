@@ -51,7 +51,7 @@ contract('Factory', function(accounts) {
     beforeEach('create contracts', async function () {
         wbtc = await WBTC.new();
         controller = await Controller.new(wbtc.address);
-        members = await Members.new();
+        members = await Members.new(admin);
         factory = await Factory.new(controller.address);
 
         await controller.setFactory(factory.address)

@@ -20,7 +20,7 @@ contract('Controller', function(accounts) {
     beforeEach('create controller and transfer wbtc ownership to it', async function () {
         wbtc = await WBTC.new();
         controller = await Controller.new(wbtc.address);
-        members = await Members.new();
+        members = await Members.new(admin);
         otherToken = await BasicTokenMock.new(admin, 100);
 
         await controller.setFactory(factory)
@@ -53,7 +53,7 @@ contract('Controller', function(accounts) {
         });
 
         it("should setMembers.", async function () {
-            const otherMembers = await Members.new();
+            const otherMembers = await Members.new(admin);
             assert.notEqual(otherMembers.address, members.address)
 
             const membersBefore = await controller.members.call();
@@ -66,7 +66,7 @@ contract('Controller', function(accounts) {
         });
 
         it("should check setMembers event.", async function () {
-            const otherMembers = await Members.new();
+            const otherMembers = await Members.new(admin);
             const { logs } = await controller.setMembers(otherMembers.address);
             assert.equal(logs.length, 1);
             assert.equal(logs[0].event, 'MembersSet');
