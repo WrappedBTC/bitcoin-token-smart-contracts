@@ -33,6 +33,10 @@ contract('Controller', function(accounts) {
     describe('as owner', function () {
         const from = admin;
 
+        it("should create controller with 0 token address.", async function () {
+            await expectThrow(Controller.new(0), "invalid _token address");
+        });
+
         it("should setWBTC.", async function () {
             assert.notEqual(wbtc.address, otherToken.address)
 
@@ -43,6 +47,10 @@ contract('Controller', function(accounts) {
 
             const tokenAfter = await controller.token.call();
             assert.equal(tokenAfter, otherToken.address);
+        });
+
+        it("should setWBTC with 0 token address.", async function () {
+            await expectThrow(controller.setWBTC(0), "invalid _token address");
         });
 
         it("should check setWBTC event.", async function () {
@@ -65,6 +73,10 @@ contract('Controller', function(accounts) {
             assert.equal(membersAfter, otherMembers.address);
         });
 
+        it("should setMembers with 0 address.", async function () {
+            await expectThrow(controller.setMembers(0), "invalid _members address");
+        });
+
         it("should check setMembers event.", async function () {
             const otherMembers = await Members.new(admin);
             const { logs } = await controller.setMembers(otherMembers.address);
@@ -83,6 +95,10 @@ contract('Controller', function(accounts) {
 
             const factoryAfter = await controller.factory.call();
             assert.equal(factoryAfter, otherFactory);
+        });
+
+        it("should setFactory with 0 address.", async function () {
+            await expectThrow(controller.setFactory(0), "invalid _factory address");
         });
 
         it("should check setFactory event.", async function () {
@@ -179,6 +195,16 @@ contract('Controller', function(accounts) {
             assert.equal(balanceAfter, 100);
         });
 
+        it("should mint with 0 address", async function () {
+            await expectThrow(controller.mint(0, 100, {from: factory}), "invalid to address");
+        });
+
+        it("mint of token that controller does not own should fail", async function () {
+            await controller.callTransferOwnership(wbtc.address, admin)
+            await wbtc.claimOwnership()
+            await expectThrow(controller.mint(admin, 100, {from: factory}));
+        });
+
         it("burn", async function () {
             await controller.mint(factory, 100, {from: factory});
 
@@ -191,6 +217,16 @@ contract('Controller', function(accounts) {
             await controller.burn(20, {from: factory});
             const balanceAfter = await wbtc.balanceOf(factory);
             assert.equal(balanceAfter, 80);
+        });
+
+        it("burn of token that controller does not own should fail", async function () {
+            await controller.mint(factory, 100, {from: factory});
+            await wbtc.transfer(controller.address, 20, {from: factory})
+
+            await controller.callTransferOwnership(wbtc.address, admin)
+            await wbtc.claimOwnership()
+
+            await expectThrow(controller.burn(20, {from: factory}));
         });
     });
 

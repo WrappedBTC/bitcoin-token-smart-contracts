@@ -9,7 +9,7 @@ contract OwnableContractOwner is OwnableContract {
     event CalledTransferOwnership(OwnableContract ownedContract, address newOwner);
 
     function callTransferOwnership(OwnableContract ownedContract, address newOwner) external onlyOwner returns (bool) {
-        require(newOwner != address(0), "bad address");
+        require(newOwner != address(0), "invalid newOwner address");
         ownedContract.transferOwnership(newOwner);
         emit CalledTransferOwnership(ownedContract, newOwner);
         return true;
@@ -26,7 +26,7 @@ contract OwnableContractOwner is OwnableContract {
     event CalledReclaimToken(OwnableContract ownedContract, ERC20 _token);
 
     function callReclaimToken(OwnableContract ownedContract, ERC20 _token) external onlyOwner returns (bool) {
-        require(_token != address(0), "bad address");
+        require(_token != address(0), "invalid _token address");
         ownedContract.reclaimToken(_token);
         emit CalledReclaimToken(ownedContract, _token);
         return true;

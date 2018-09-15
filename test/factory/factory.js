@@ -26,6 +26,7 @@ const REQUEST_STATUS_PENDING            = "pending"
 const REQUEST_STATUS_CANCELED           = "canceled"
 const REQUEST_STATUS_APPROVED           = "approved"
 const REQUEST_STATUS_REJECTED           = "rejected"
+const REQUEST_STATUS_UNREACHABLE        = "unreachable"
 
 contract('Factory', function(accounts) {
 
@@ -173,6 +174,10 @@ contract('Factory', function(accounts) {
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_CANCELED)
         });
 
+        it("cancelMintRequest for 0 request hash fails", async function () {
+            await expectThrow(factory.cancelMintRequest(0, {from}), "request hash is 0");
+        });
+
         it("cancelMintRequest for already canceled request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
@@ -274,6 +279,24 @@ contract('Factory', function(accounts) {
             assert.equal(balanceAfter, 0);
         });
 
+        it("burn without allowance fails", async function () {
+            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0});
+
+            await expectThrow(factory.burn(amount, {from: merchant0}));
+        });
+
+        it("burn without being the configured factory in controller fails", async function () {
+            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
+            await wbtc.approve(factory.address, amount, {from: merchant0});
+            await controller.setFactory(other);
+            await expectThrow(
+                    factory.burn(amount, {from: merchant0}),
+                    "sender not authorized for minting or burning"
+            );
+        });
+
         it("burn sets request status to pending", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
@@ -346,6 +369,10 @@ contract('Factory', function(accounts) {
             assert.equal(custodianBtcDepositAddress, custodianBtcDepositAddressForMerchant0);
         });
 
+        it("setCustodianBtcDepositAddress with 0 merchant address fails", async function () {
+            await expectThrow(factory.setCustodianBtcDepositAddress(0, custodianBtcDepositAddressForMerchant0, {from}), "invalid merchant address");
+        });
+
         it("setCustodianBtcDepositAddress with empty string reverts", async function () {
             await expectThrow(
                 factory.setCustodianBtcDepositAddress(merchant0, "", {from}),
@@ -397,6 +424,15 @@ contract('Factory', function(accounts) {
             await expectThrow(
                     factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
                     "request is not pending"
+            );
+        });
+
+        it("confirmMintRequest without being the configured factory in controller fails", async function () {
+            await controller.setFactory(other);
+            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await expectThrow(
+                    factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
+                    "sender not authorized for minting or burning"
             );
         });
 
@@ -532,6 +568,10 @@ contract('Factory', function(accounts) {
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_APPROVED);
         });
 
+        it("confirmBurnRequest with 0 hash fails", async function () {
+            await expectThrow(factory.confirmBurnRequest(0, btcTxid0, {from}), "request hash is 0");
+        });
+
         it("confirmBurnRequest with non exsting request hash", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from})
@@ -635,6 +675,10 @@ contract('Factory', function(accounts) {
         const from = merchant0;
         const amount = 60;
 
+        it("check creae contract with 0 controller address fails", async function () {
+            await expectThrow(Factory.new(0), "invalid _controller address");
+        });
+
         it("getMintRequestsLength", async function () {
             const lengthBefore = await factory.getMintRequestsLength();
             assert.equal(lengthBefore, 0);
@@ -663,6 +707,25 @@ contract('Factory', function(accounts) {
 
             const lengthAfter = await factory.getBurnRequestsLength();
             assert.equal(lengthAfter, 3);
+        });
+
+        it("getMintRequests with invalid nonce", async function () {
+            const lengthBefore = await factory.getMintRequestsLength();
+            assert.equal(lengthBefore, 0);
+            
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+
+            const lengthAfter = await factory.getMintRequestsLength();
+            assert.equal(lengthAfter, 5);
+        });
+
+        it("get status string with unknown value", async function () {
+            const status = await factory.getStatusString(4);
+            assert.equal(status, "unreachable");
         });
     });
 });

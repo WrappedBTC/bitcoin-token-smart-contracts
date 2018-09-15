@@ -15,7 +15,7 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     address public factory;
 
     constructor(WBTCInterface _token) public {
-        require(_token != address(0), "invalid _tokens address");
+        require(_token != address(0), "invalid _token address");
         token = _token;
     }
 
@@ -71,7 +71,7 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
 
     // only factory actions on token
     function mint(address to, uint amount) external onlyFactory returns (bool) {
-        require(to != address(0), "bad address");
+        require(to != address(0), "invalid to address");
         require(token.mint(to, amount), "minting failed.");
         return true;
     }

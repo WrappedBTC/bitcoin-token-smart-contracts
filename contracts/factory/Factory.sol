@@ -7,7 +7,7 @@ import "../controller/ControllerInterface.sol";
 
 contract Factory is OwnableContract {
 
-    enum RequestStatus {PENDING, CANCELED, APPROVED, REJECTED}
+    enum RequestStatus {PENDING, CANCELED, APPROVED, REJECTED, UNREACHABLE}
 
     struct Request {
         address requester; // sender of the request.
@@ -64,7 +64,7 @@ contract Factory is OwnableContract {
         onlyCustodian
         returns (bool) 
     {
-        require(merchant != 0, "merchant address is 0");
+        require(merchant != 0, "invalid merchant address");
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
         custodianBtcDepositAddress[merchant] = btcDepositAddress;
@@ -342,6 +342,20 @@ contract Factory is OwnableContract {
         return (compareStrings(a, ""));
     }
 
+    function getStatusString(RequestStatus status) public pure returns (string) {
+        if (status == RequestStatus.PENDING) {
+            return "pending";
+        } else if (status == RequestStatus.CANCELED) {
+            return "canceled";
+        } else if (status == RequestStatus.APPROVED) {
+            return "approved";
+        } else if (status == RequestStatus.REJECTED) {
+            return "rejected";
+        } else {
+            return "unreachable"; // this fallback can never be reached.
+        }
+    }
+
     function getTimestamp() internal view returns (uint) {
         //timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
         return block.timestamp; // solhint-disable-line not-rely-on-time
@@ -375,19 +389,5 @@ contract Factory is OwnableContract {
             request.nonce,
             request.timestamp
         ));
-    }
-
-    function getStatusString(RequestStatus status) internal pure returns (string) {
-        if (status == RequestStatus.PENDING) {
-            return "pending";
-        } else if (status == RequestStatus.CANCELED) {
-            return "canceled";
-        } else if (status == RequestStatus.APPROVED) {
-            return "approved";
-        } else if (status == RequestStatus.REJECTED) {
-            return "rejected";
-        } else {
-            return "unknown";
-        }
     }
 }

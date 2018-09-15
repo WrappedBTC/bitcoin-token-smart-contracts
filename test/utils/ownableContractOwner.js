@@ -45,6 +45,10 @@ contract('OwnableContractOwner', function(accounts) {
             pendingOwnerAfter.should.equal(newOwner)
         });
 
+        it('should check callTransferOwnership to 0 address fails', async function () { 
+            await expectThrow(ownableContractOwner.callTransferOwnership(ownableContract.address, 0, { from }), "invalid newOwner address");
+        });
+
         it('should check callTransferOwnership emits an event', async function () {
             const { logs } = await ownableContractOwner.callTransferOwnership(ownableContract.address, newOwner, { from });
             assert.equal(logs.length, 1);
@@ -89,6 +93,10 @@ contract('OwnableContractOwner', function(accounts) {
             await ownableContractOwner.callReclaimToken(ownableContract.address, token.address);
             const newBalance = await token.balanceOf(ownableContractOwner.address);
             assert.equal(newBalance, amount);
+        });
+
+        it('should check callReclaimToken with 0 token address fails', async function () {
+            await expectThrow(ownableContractOwner.callReclaimToken(ownableContract.address, 0), "invalid _token address");
         });
 
         it('should check callReclaimToken emits an event', async function () {
