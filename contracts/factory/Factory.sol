@@ -273,7 +273,7 @@ contract Factory is OwnableContract {
     }
 
     function getMintRequest(uint nonce)
-        public
+        external
         view
         returns (
             uint requestNonce,
@@ -300,7 +300,7 @@ contract Factory is OwnableContract {
     }
 
     function getBurnRequest(uint nonce)
-        public
+        external
         view
         returns (
             uint requestNonce,
@@ -326,12 +326,17 @@ contract Factory is OwnableContract {
         requestHash = calcRequestHash(request);
     }
 
-    function getMintRequestsLength() public view returns (uint length) {
+    function getMintRequestsLength() external view returns (uint length) {
         return mintRequests.length;
     }
 
-    function getBurnRequestsLength() public view returns (uint length) {
+    function getBurnRequestsLength() external view returns (uint length) {
         return burnRequests.length;
+    }
+
+    function getTimestamp() public view returns (uint) {
+        //timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
+        return block.timestamp; // solhint-disable-line not-rely-on-time
     }
 
     function compareStrings (string a, string b) public pure returns (bool) {
@@ -354,11 +359,6 @@ contract Factory is OwnableContract {
         } else {
             return "unreachable"; // this fallback can never be reached.
         }
-    }
-
-    function getTimestamp() internal view returns (uint) {
-        //timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
-        return block.timestamp; // solhint-disable-line not-rely-on-time
     }
 
     function getPendingMintRequest(bytes32 requestHash) internal view returns (uint nonce, Request memory request) {

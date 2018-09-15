@@ -66,19 +66,19 @@ contract Members is MembersInterface, OwnableContract {
         return merchants.exists(addr);
     }
 
-    function getMerchant(uint index) public view returns (address) {
+    function getMerchant(uint index) external view returns (address) {
         return merchants.getValue(index);
     }
 
-    function getMerchants() public view returns (address[]) {
+    function getMerchants() external view returns (address[]) {
         return merchants.getValueList();
     }
 
-    function getCustodian(uint index) public view returns (address) {
+    function getCustodian(uint index) external view returns (address) {
         return custodians.getValue(index);
     }
 
-    function getCustodians() public view returns (address[]) {
+    function getCustodians() external view returns (address[]) {
         return custodians.getValueList();
     }
 }
