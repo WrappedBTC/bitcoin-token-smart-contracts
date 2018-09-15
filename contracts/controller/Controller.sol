@@ -25,15 +25,6 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     }
 
     // setters
-    event WBTCSet(WBTCInterface token);
-
-    function setWBTC(WBTCInterface _token) external onlyOwner returns (bool) {
-        require(_token != address(0), "invalid _token address");
-        token = _token;
-        emit WBTCSet(_token);
-        return true;
-    }
-
     event MembersSet(MembersInterface members);
 
     function setMembers(MembersInterface _members) external onlyOwner returns (bool) {

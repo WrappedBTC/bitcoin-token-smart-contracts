@@ -37,29 +37,6 @@ contract('Controller', function(accounts) {
             await expectThrow(Controller.new(0), "invalid _token address");
         });
 
-        it("should setWBTC.", async function () {
-            assert.notEqual(wbtc.address, otherToken.address)
-
-            const tokenBefore = await controller.token.call();
-            assert.equal(tokenBefore, wbtc.address);
-
-            await controller.setWBTC(otherToken.address)
-
-            const tokenAfter = await controller.token.call();
-            assert.equal(tokenAfter, otherToken.address);
-        });
-
-        it("should setWBTC with 0 token address.", async function () {
-            await expectThrow(controller.setWBTC(0), "invalid _token address");
-        });
-
-        it("should check setWBTC event.", async function () {
-            const { logs } = await controller.setWBTC(otherToken.address);
-            assert.equal(logs.length, 1);
-            assert.equal(logs[0].event, 'WBTCSet');
-            assert.equal(logs[0].args.token, otherToken.address);
-        });
-
         it("should setMembers.", async function () {
             const otherMembers = await Members.new(admin);
             assert.notEqual(otherMembers.address, members.address)
@@ -164,12 +141,8 @@ contract('Controller', function(accounts) {
     describe('not as owner', function () {
         const from = other;
 
-        it("setWBTC reverts.", async function () {
-            await expectThrow(controller.setWBTC(otherToken.address, {from}));
-        });
-
         it("setMembers reverts.", async function () {
-            await expectThrow(controller.setWBTC(otherToken.address, {from}));
+            await expectThrow(controller.setMembers(otherToken.address, {from}));
         });
 
         it("setFactory reverts.", async function () {
