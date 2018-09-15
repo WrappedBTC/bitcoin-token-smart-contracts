@@ -4,17 +4,17 @@ pragma solidity 0.4.24;
 import "../utils/OwnableContract.sol";
 import "../utils/OwnableContractOwner.sol";
 import "../controller/ControllerInterface.sol";
-import "../token/WBTCInterface.sol";
+import "../token/WBTC.sol";
 import "../factory/MembersInterface.sol";
 
 
 contract Controller is ControllerInterface, OwnableContract, OwnableContractOwner {
 
-    WBTCInterface public token;
+    WBTC public token;
     MembersInterface public members;
     address public factory;
 
-    constructor(WBTCInterface _token) public {
+    constructor(WBTC _token) public {
         require(_token != address(0), "invalid _token address");
         token = _token;
     }
@@ -81,7 +81,7 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
         return members.isMerchant(addr);
     }
 
-    function getWBTC() external view returns (WBTCInterface) {
+    function getWBTC() external view returns (ERC20) {
         return token;
     }
 }

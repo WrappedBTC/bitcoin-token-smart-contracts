@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 
-import "../token/WBTCInterface.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 
 interface ControllerInterface {
@@ -9,5 +9,5 @@ interface ControllerInterface {
     function burn(uint value) external returns (bool);
     function isCustodian(address addr) external view returns (bool);
     function isMerchant(address addr) external view returns (bool);
-    function getWBTC() external view returns (WBTCInterface);
+    function getWBTC() external view returns (ERC20);
 }

@@ -7,10 +7,9 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/BurnableToken.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 import "../utils/OwnableContract.sol";
-import "../token/WBTCInterface.sol";
 
 
-contract WBTC is WBTCInterface, StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
+contract WBTC is StandardToken, DetailedERC20, MintableToken, BurnableToken, PausableToken,
     OwnableContract {
 
     // empty block is used as the ctr just explicitly initializes the parent class. 
