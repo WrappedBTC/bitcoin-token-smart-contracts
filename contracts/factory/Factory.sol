@@ -1,6 +1,5 @@
 pragma solidity 0.4.24;
 
-
 import "../utils/OwnableContract.sol";
 import "../controller/ControllerInterface.sol";
 
@@ -13,7 +12,7 @@ contract Factory is OwnableContract {
         address requester; // sender of the request.
         uint amount; // amount of wbtc to mint/burn.
         string btcDepositAddress; // custodian's btc address in mint, merchant's btc address in burn.
-        string btcTxid; // bitcoin chain txid for sending/redeeming btc in the mint/burn process.
+        string btcTxid; // bitcoin txid for sending/redeeming btc in the mint/burn process.
         uint nonce; // serial number allocated for each request.
         uint timestamp; // time of the request creation.
         RequestStatus status; // status of the request.
@@ -140,45 +139,6 @@ contract Factory is OwnableContract {
         return true;
     }
 
-    event Burned(
-        uint indexed nonce,
-        address indexed requester,
-        uint amount,
-        string btcDepositAddress,
-        uint timestamp,
-        bytes32 requestHash
-    );
-
-    function burn(uint amount) external onlyMerchant returns (bool) {
-        string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
-        require(!isEmptyString(btcDepositAddress), "merchant btc deposit address was not set"); 
-
-        uint nonce = burnRequests.length;
-        uint timestamp = getTimestamp();
-
-        string memory btcTxid = ""; // set txid as empty since it is not known yet.
-
-        Request memory request = Request({
-            requester: msg.sender,
-            amount: amount,
-            btcDepositAddress: btcDepositAddress,
-            btcTxid: btcTxid,
-            nonce: nonce,
-            timestamp: timestamp,
-            status: RequestStatus.PENDING
-        });
-
-        bytes32 requestHash = calcRequestHash(request);
-        burnRequestNonce[requestHash] = nonce; 
-        burnRequests.push(request);
-
-        require(controller.getWBTC().transferFrom(msg.sender, controller, amount), "trasnfer tokens to burn failed");
-        require(controller.burn(amount), "burn failed");
-
-        emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
-        return true;
-    }
-
     event MintConfirmed(
         uint indexed nonce,
         address indexed requester,
@@ -237,6 +197,46 @@ contract Factory is OwnableContract {
             request.timestamp,
             requestHash
         );
+        return true;
+    }
+
+    event Burned(
+        uint indexed nonce,
+        address indexed requester,
+        uint amount,
+        string btcDepositAddress,
+        uint timestamp,
+        bytes32 requestHash
+    );
+
+    function burn(uint amount) external onlyMerchant returns (bool) {
+        string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
+        require(!isEmptyString(btcDepositAddress), "merchant btc deposit address was not set"); 
+
+        uint nonce = burnRequests.length;
+        uint timestamp = getTimestamp();
+
+        // set txid as empty since it is not known yet.
+        string memory btcTxid = "";
+
+        Request memory request = Request({
+            requester: msg.sender,
+            amount: amount,
+            btcDepositAddress: btcDepositAddress,
+            btcTxid: btcTxid,
+            nonce: nonce,
+            timestamp: timestamp,
+            status: RequestStatus.PENDING
+        });
+
+        bytes32 requestHash = calcRequestHash(request);
+        burnRequestNonce[requestHash] = nonce; 
+        burnRequests.push(request);
+
+        require(controller.getWBTC().transferFrom(msg.sender, controller, amount), "trasnfer tokens to burn failed");
+        require(controller.burn(amount), "burn failed");
+
+        emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
         return true;
     }
 
@@ -299,6 +299,10 @@ contract Factory is OwnableContract {
         requestHash = calcRequestHash(request);
     }
 
+    function getMintRequestsLength() external view returns (uint length) {
+        return mintRequests.length;
+    }
+
     function getBurnRequest(uint nonce)
         external
         view
@@ -326,16 +330,12 @@ contract Factory is OwnableContract {
         requestHash = calcRequestHash(request);
     }
 
-    function getMintRequestsLength() external view returns (uint length) {
-        return mintRequests.length;
-    }
-
     function getBurnRequestsLength() external view returns (uint length) {
         return burnRequests.length;
     }
 
     function getTimestamp() public view returns (uint) {
-        //timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
+        // timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
         return block.timestamp; // solhint-disable-line not-rely-on-time
     }
 
@@ -357,7 +357,8 @@ contract Factory is OwnableContract {
         } else if (status == RequestStatus.REJECTED) {
             return "rejected";
         } else {
-            return "unreachable"; // this fallback can never be reached.
+            // this fallback can never be reached.
+            return "unreachable";
         }
     }
 

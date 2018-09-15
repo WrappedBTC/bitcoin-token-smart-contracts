@@ -1,6 +1,5 @@
 pragma solidity 0.4.24;
 
-
 import "../utils/OwnableContract.sol";
 import "../utils/OwnableContractOwner.sol";
 import "../controller/ControllerInterface.sol";

@@ -1,6 +1,5 @@
 pragma solidity 0.4.24;
 
-
 import "../utils/OwnableContract.sol";
 import "../utils/IndexedMapping.sol";
 import "../factory/MembersInterface.sol";
@@ -9,7 +8,6 @@ import "../factory/MembersInterface.sol";
 contract Members is MembersInterface, OwnableContract {
 
     using IndexedMapping for IndexedMapping.Data;
-
     IndexedMapping.Data internal custodians;
     IndexedMapping.Data internal merchants;
 
@@ -62,6 +60,14 @@ contract Members is MembersInterface, OwnableContract {
         return custodians.exists(addr);
     }
 
+    function getCustodian(uint index) external view returns (address) {
+        return custodians.getValue(index);
+    }
+
+    function getCustodians() external view returns (address[]) {
+        return custodians.getValueList();
+    }
+
     function isMerchant(address addr) external view returns (bool) {
         return merchants.exists(addr);
     }
@@ -72,13 +78,5 @@ contract Members is MembersInterface, OwnableContract {
 
     function getMerchants() external view returns (address[]) {
         return merchants.getValueList();
-    }
-
-    function getCustodian(uint index) external view returns (address) {
-        return custodians.getValue(index);
-    }
-
-    function getCustodians() external view returns (address[]) {
-        return custodians.getValueList();
     }
 }

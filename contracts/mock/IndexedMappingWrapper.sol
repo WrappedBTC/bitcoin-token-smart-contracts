@@ -1,13 +1,11 @@
 pragma solidity 0.4.24;
 
-
 import "../utils/IndexedMapping.sol";
 
 
 contract IndexedMappingWrapper {
 
     using IndexedMapping for IndexedMapping.Data;
-
     IndexedMapping.Data internal data;
 
     function add(address val) external returns (bool) {

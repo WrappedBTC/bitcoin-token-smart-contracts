@@ -26,10 +26,10 @@ library IndexedMapping {
         index = self.valueIndex[val];
         lastVal = self.valueList[self.valueList.length - 1];
 
-        // remove val 
+        // remove value
         delete self.valueExists[val];
 
-        // replace it with last val
+        // replace it with last value
         self.valueList[index] = lastVal;
         self.valueIndex[lastVal] = index;
         self.valueList.length--;
