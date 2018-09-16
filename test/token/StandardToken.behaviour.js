@@ -1,8 +1,7 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
+const { ZEPPELIN_LOCATION, ZERO_ADDRESS } = require("../helper.js");
+const { assertRevert } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/assertRevert');
 
 function shouldBehaveLikeStandardToken ([owner, recipient, anotherAccount]) {
-
-  const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
   describe('total supply', function () {
     it('returns the total amount of tokens', async function () {

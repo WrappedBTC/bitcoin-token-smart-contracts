@@ -1,24 +1,20 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-const { ethSendTransaction, ethGetBalance } = require('../../node_modules/openzeppelin-solidity/test/helpers/web3');
-
 const BigNumber = web3.BigNumber
 
+const { ZEPPELIN_LOCATION , ZERO_ADDRESS} = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
+const { ethSendTransaction, ethGetBalance } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/web3');
 
 require("chai")
     .use(require("chai-as-promised"))
     .use(require('chai-bignumber')(BigNumber))
     .should()
 
-let Helper = require("../helper.js");
-
 const OwnableContract = artifacts.require("./utils/OwnableContract.sol");
 const OwnableContractOwner = artifacts.require("./utils/OwnableContractOwner.sol");
 const BasicTokenMock = artifacts.require('BasicTokenMock');
 
-
 contract('OwnableContractOwner', function(accounts) {
 
-    const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
     const admin = accounts[0];
     const newOwner = accounts[1];
     const nonOwner = accounts[2];
@@ -37,7 +33,7 @@ contract('OwnableContractOwner', function(accounts) {
         const from = admin;
 
         it('verify calling transferOwnership directly on the owned contract fails', async function () {
-            await assertRevert(ownableContract.transferOwnership(newOwner));
+            await expectThrow(ownableContract.transferOwnership(newOwner));
         });
 
         it('should check callTransferOwnership transfers ownership', async function () { 
@@ -47,6 +43,10 @@ contract('OwnableContractOwner', function(accounts) {
             await ownableContractOwner.callTransferOwnership(ownableContract.address, newOwner, { from })
             const pendingOwnerAfter = await ownableContract.pendingOwner.call();
             pendingOwnerAfter.should.equal(newOwner)
+        });
+
+        it('should check callTransferOwnership to 0 address fails', async function () { 
+            await expectThrow(ownableContractOwner.callTransferOwnership(ownableContract.address, 0, { from }), "invalid newOwner address");
         });
 
         it('should check callTransferOwnership emits an event', async function () {
@@ -95,6 +95,10 @@ contract('OwnableContractOwner', function(accounts) {
             assert.equal(newBalance, amount);
         });
 
+        it('should check callReclaimToken with 0 token address fails', async function () {
+            await expectThrow(ownableContractOwner.callReclaimToken(ownableContract.address, 0), "invalid _token address");
+        });
+
         it('should check callReclaimToken emits an event', async function () {
             const amount = 50;
             await token.transfer(ownableContract.address, amount);
@@ -109,17 +113,17 @@ contract('OwnableContractOwner', function(accounts) {
     describe('not as owner of the ownable contract', function () {
         const from = nonOwner;
         it('should check callTransferOwnership transfers reverts', async function () {
-            await assertRevert(ownableContractOwner.callTransferOwnership(ownableContract.address, newOwner, { from }));
+            await expectThrow(ownableContractOwner.callTransferOwnership(ownableContract.address, newOwner, { from }));
         });
 
         it('should check callClaimOwnership claims reverts', async function () {
-            await assertRevert(ownableContractOwner.callTransferOwnership(ownableContract.address, otherOwnableContractOwner.address, { from }));
+            await expectThrow(ownableContractOwner.callTransferOwnership(ownableContract.address, otherOwnableContractOwner.address, { from }));
         });
 
         it('should check callReclaimToken reverts', async function () {
             const amount = 50;
             await token.transfer(ownableContract.address, amount);
-            await assertRevert(ownableContractOwner.callReclaimToken(ownableContract.address, token.address, {from} ));
+            await expectThrow(ownableContractOwner.callReclaimToken(ownableContract.address, token.address, {from} ));
         });
     });
 });

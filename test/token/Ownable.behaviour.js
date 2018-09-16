@@ -1,7 +1,6 @@
-const { expectThrow } = require('../../node_modules/openzeppelin-solidity/test/helpers/expectThrow');
-const { EVMRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/EVMRevert');
-
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+const { ZEPPELIN_LOCATION, ZERO_ADDRESS } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
+const { EVMRevert } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/EVMRevert');
 
 require('chai')
   .should();

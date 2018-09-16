@@ -1,6 +1,7 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-
 const BigNumber = web3.BigNumber;
+
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { assertRevert } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/assertRevert');
 
 require('chai')
   .use(require('chai-bignumber')(BigNumber))

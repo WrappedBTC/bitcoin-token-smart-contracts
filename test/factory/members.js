@@ -1,11 +1,12 @@
 const BigNumber = web3.BigNumber
 
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
+
 require("chai")
     .use(require("chai-as-promised"))
     .use(require('chai-bignumber')(BigNumber))
     .should()
-
-let Helper = require("../helper.js");
 
 const Members = artifacts.require("./factory/Members.sol");
 
@@ -19,7 +20,11 @@ contract('Members', function(accounts) {
         user4 = accounts[4];
         user5 = accounts[5];
         user6 = accounts[6];
-        members = await Members.new();
+        members = await Members.new(admin);
+    });
+
+    it("create members with 0 owner address parameter fails.", async function () {
+        await expectThrow(Members.new(0), "invalid _owner address");
     });
 
     it("add a custodian.", async function () {
@@ -32,6 +37,11 @@ contract('Members', function(accounts) {
         (custodians.length).should.equal(1);
         custodians[0].should.equal(user1);
     });
+
+    it("add a custodian with 0 address fails.", async function () {
+        await expectThrow(members.addCustodian(0), "invalid custodian address");
+    });
+
     it("remove a custodian.", async function () {
         await members.addCustodian(user1);
         await members.addCustodian(user2);
@@ -45,26 +55,28 @@ contract('Members', function(accounts) {
         custodians[0].should.equal(user2);
     });
 
+    it("remove custodian with 0 address fails.", async function () {
+        await expectThrow(members.removeCustodian(0), "invalid custodian address");
+    });
+
     it("add a custodian not as owner.", async function () {
-        try {
-            await members.addCustodian(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(members.addCustodian(user1, {from:user1}));
+    });
+
+    it("add a custodian which was already added.", async function () {
+        members.addCustodian(user1);
+        await expectThrow(members.addCustodian(user1), "custodian add failed");
     });
 
     it("remove a custodian not as owner.", async function () {
-
         await members.addCustodian(user1);
+        await expectThrow(members.removeCustodian(user1, {from:user1}));
+    });
 
-        try {
-            await members.removeCustodian(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
-        
+    it("remove a custodian which was already removed.", async function () {
+        await members.addCustodian(user1);
+        members.removeCustodian(user1);
+        await expectThrow(members.removeCustodian(user1), "custodian remove failed");
     });
 
     it("add a few custodians and get the entire list.", async function () {
@@ -103,6 +115,11 @@ contract('Members', function(accounts) {
         (merchants.length).should.equal(1);
         merchants[0].should.equal(user1);
     });
+
+    it("add a merchant with 0 address fails.", async function () {
+        await expectThrow(members.addMerchant(0), "invalid merchant address");
+    });
+
     it("remove a merchant.", async function () {
         await members.addMerchant(user1);
         await members.addMerchant(user2);
@@ -116,26 +133,28 @@ contract('Members', function(accounts) {
         merchants[0].should.equal(user2);
     });
 
+    it("remove merchant with 0 address fails.", async function () {
+        await expectThrow(members.removeMerchant(0), "invalid merchant address");
+    });
+
+    it("remove a merchant which was already removed.", async function () {
+        await members.addMerchant(user1);
+        await members.removeMerchant(user1);
+        await expectThrow(members.removeMerchant(user1), "merchant remove failed");
+    });
+
     it("add a merchant not as owner.", async function () {
-        try {
-            await members.addMerchant(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
+        await expectThrow(members.addMerchant(user1, {from:user1}));
+    });
+
+    it("add a merchant which was already added.", async function () {
+        members.addMerchant(user1);
+        await expectThrow(members.addMerchant(user1), "merchant add failed");
     });
 
     it("remove a merchant not as owner.", async function () {
-
         await members.addMerchant(user1);
-
-        try {
-            await members.removeMerchant(user1, {from:user1});
-            assert(false, "throw was expected in line above.")
-        } catch(e){
-            assert(Helper.isRevertErrorMessage(e), "expected revert but got: " + e);
-        }
-        
+        await expectThrow(members.removeMerchant(user1, {from:user1}));
     });
 
     it("add a few merchants and get the entire list.", async function () {

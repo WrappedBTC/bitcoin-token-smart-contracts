@@ -1,5 +1,5 @@
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
 
 const WBTC = artifacts.require("./token/WBTC.sol")
 const Members = artifacts.require("./factory/Members.sol")
@@ -20,7 +20,7 @@ contract('Controller', function(accounts) {
     beforeEach('create controller and transfer wbtc ownership to it', async function () {
         wbtc = await WBTC.new();
         controller = await Controller.new(wbtc.address);
-        members = await Members.new();
+        members = await Members.new(admin);
         otherToken = await BasicTokenMock.new(admin, 100);
 
         await controller.setFactory(factory)
@@ -33,27 +33,12 @@ contract('Controller', function(accounts) {
     describe('as owner', function () {
         const from = admin;
 
-        it("should setWBTC.", async function () {
-            assert.notEqual(wbtc.address, otherToken.address)
-
-            const tokenBefore = await controller.token.call();
-            assert.equal(tokenBefore, wbtc.address);
-
-            await controller.setWBTC(otherToken.address)
-
-            const tokenAfter = await controller.token.call();
-            assert.equal(tokenAfter, otherToken.address);
-        });
-
-        it("should check setWBTC event.", async function () {
-            const { logs } = await controller.setWBTC(otherToken.address);
-            assert.equal(logs.length, 1);
-            assert.equal(logs[0].event, 'WBTCSet');
-            assert.equal(logs[0].args.token, otherToken.address);
+        it("should create controller with 0 token address.", async function () {
+            await expectThrow(Controller.new(0), "invalid _token address");
         });
 
         it("should setMembers.", async function () {
-            const otherMembers = await Members.new();
+            const otherMembers = await Members.new(admin);
             assert.notEqual(otherMembers.address, members.address)
 
             const membersBefore = await controller.members.call();
@@ -65,8 +50,12 @@ contract('Controller', function(accounts) {
             assert.equal(membersAfter, otherMembers.address);
         });
 
+        it("should setMembers with 0 address.", async function () {
+            await expectThrow(controller.setMembers(0), "invalid _members address");
+        });
+
         it("should check setMembers event.", async function () {
-            const otherMembers = await Members.new();
+            const otherMembers = await Members.new(admin);
             const { logs } = await controller.setMembers(otherMembers.address);
             assert.equal(logs.length, 1);
             assert.equal(logs[0].event, 'MembersSet');
@@ -83,6 +72,10 @@ contract('Controller', function(accounts) {
 
             const factoryAfter = await controller.factory.call();
             assert.equal(factoryAfter, otherFactory);
+        });
+
+        it("should setFactory with 0 address.", async function () {
+            await expectThrow(controller.setFactory(0), "invalid _factory address");
         });
 
         it("should check setFactory event.", async function () {
@@ -108,7 +101,7 @@ contract('Controller', function(accounts) {
         it("should check transfer fails after pause.", async function () {
             await controller.pause();
             await controller.mint(admin, 100, {from: factory});
-            await assertRevert(wbtc.transfer(other, 20));
+            await expectThrow(wbtc.transfer(other, 20));
         });
 
         it("should check pause emits an event.", async function () {
@@ -126,7 +119,7 @@ contract('Controller', function(accounts) {
             const isPausedBefore = await wbtc.paused.call();
             assert.equal(isPausedBefore, true);
 
-            await assertRevert(wbtc.transfer(other, 20));
+            await expectThrow(wbtc.transfer(other, 20));
 
             await controller.unpause();
             const isPausedAfter = await wbtc.paused.call();
@@ -148,24 +141,20 @@ contract('Controller', function(accounts) {
     describe('not as owner', function () {
         const from = other;
 
-        it("setWBTC reverts.", async function () {
-            await assertRevert(controller.setWBTC(otherToken.address, {from}));
-        });
-
         it("setMembers reverts.", async function () {
-            await assertRevert(controller.setWBTC(otherToken.address, {from}));
+            await expectThrow(controller.setMembers(otherToken.address, {from}));
         });
 
         it("setFactory reverts.", async function () {
-            await assertRevert(controller.setFactory(otherFactory, {from}));
+            await expectThrow(controller.setFactory(otherFactory, {from}));
         });
 
         it("pause reverts.", async function () {
-            await assertRevert(controller.pause({from}));
+            await expectThrow(controller.pause({from}));
         });
 
         it("unpause reverts.", async function () {
-            await assertRevert(controller.unpause({from}));
+            await expectThrow(controller.unpause({from}));
         });
     });
 
@@ -177,6 +166,16 @@ contract('Controller', function(accounts) {
             await controller.mint(admin, 100, {from: factory});
             const balanceAfter = await wbtc.balanceOf(admin);
             assert.equal(balanceAfter, 100);
+        });
+
+        it("should mint with 0 address", async function () {
+            await expectThrow(controller.mint(0, 100, {from: factory}), "invalid to address");
+        });
+
+        it("mint of token that controller does not own should fail", async function () {
+            await controller.callTransferOwnership(wbtc.address, admin)
+            await wbtc.claimOwnership()
+            await expectThrow(controller.mint(admin, 100, {from: factory}));
         });
 
         it("burn", async function () {
@@ -192,11 +191,21 @@ contract('Controller', function(accounts) {
             const balanceAfter = await wbtc.balanceOf(factory);
             assert.equal(balanceAfter, 80);
         });
+
+        it("burn of token that controller does not own should fail", async function () {
+            await controller.mint(factory, 100, {from: factory});
+            await wbtc.transfer(controller.address, 20, {from: factory})
+
+            await controller.callTransferOwnership(wbtc.address, admin)
+            await wbtc.claimOwnership()
+
+            await expectThrow(controller.burn(20, {from: factory}));
+        });
     });
 
     describe('not as factory', function () {
         it("mint reverts.", async function () {
-            await assertRevert(controller.mint(admin, 100, {other}));
+            await expectThrow(controller.mint(admin, 100, {other}));
         });
         it("burn reverts.", async function () {
             await controller.mint(other, 100, {from: factory});
@@ -207,7 +216,7 @@ contract('Controller', function(accounts) {
             // when burning through factory we only need to approve.
             // here we transfer since checking internally.
             await wbtc.transfer(controller.address, 20, {from: other})
-            await assertRevert(controller.burn(20, {from: other}));
+            await expectThrow(controller.burn(20, {from: other}));
         });
     });
 

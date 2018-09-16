@@ -1,6 +1,7 @@
 const BigNumber = web3.BigNumber
-const { assertRevert } = require('../../node_modules/openzeppelin-solidity/test/helpers/assertRevert');
-const { expectThrow } = require('../../node_modules/openzeppelin-solidity/test/helpers/expectThrow');
+
+const { ZEPPELIN_LOCATION } = require("../helper.js");
+const { expectThrow } = require(ZEPPELIN_LOCATION + 'openzeppelin-solidity/test/helpers/expectThrow');
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -50,7 +51,7 @@ contract('Factory', function(accounts) {
     beforeEach('create contracts', async function () {
         wbtc = await WBTC.new();
         controller = await Controller.new(wbtc.address);
-        members = await Members.new();
+        members = await Members.new(admin);
         factory = await Factory.new(controller.address);
 
         await controller.setFactory(factory.address)
@@ -85,7 +86,7 @@ contract('Factory', function(accounts) {
         });
 
         it("setMerchantBtcDepositAddress with empty string reverts", async function () {
-            await assertRevert(factory.setMerchantBtcDepositAddress("", {from}));
+            await expectThrow(factory.setMerchantBtcDepositAddress("", {from}));
         });
 
         it("setMerchantBtcDepositAddress emits event", async function () {
@@ -120,15 +121,15 @@ contract('Factory', function(accounts) {
         });
 
         it("addMintRequest with empty btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, "", {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, "", {from}));
         });
 
         it("addMintRequest with non existing btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, otherBtcAddress, {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, otherBtcAddress, {from}));
         });
 
         it("addMintRequest with other merchant's custodian btcDepositAdress fails", async function () {
-            await assertRevert(factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from}));
+            await expectThrow(factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from}));
         });
 
         it("addMintRequest sets request status to pending", async function () {
@@ -172,32 +173,36 @@ contract('Factory', function(accounts) {
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_CANCELED)
         });
 
+        it("cancelMintRequest for 0 request hash fails", async function () {
+            await expectThrow(factory.cancelMintRequest(0, {from}), "request hash is 0");
+        });
+
         it("cancelMintRequest for already canceled request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.cancelMintRequest(hash, {from});
-            await assertRevert (factory.cancelMintRequest(hash, {from}));
+            await expectThrow (factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already confirmed request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.confirmMintRequest(hash, {from: custodian0});
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already rejected request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.rejectMintRequest(hash, {from: custodian0});
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
 
         });
 
         it("cancelMintRequest for another merchant's request fails", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from: merchant1});
             const hash = logs[0].args.requestHash;
-            await assertRevert(factory.cancelMintRequest(hash, {from}));
+            await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest with unknown request hash fails", async function () {
@@ -206,7 +211,7 @@ contract('Factory', function(accounts) {
             const hash = logs[0].args.requestHash;
             const alteredHash = "0x0123456789012345678901234567890123456789012345678901234567890123456789012345"
 
-            await assertRevert(factory.cancelMintRequest(alteredHash, {from}));
+            await expectThrow(factory.cancelMintRequest(alteredHash, {from}));
             await factory.cancelMintRequest(hash, {from})
         });
 
@@ -271,6 +276,24 @@ contract('Factory', function(accounts) {
 
             const balanceAfter = await wbtc.balanceOf(merchant2)
             assert.equal(balanceAfter, 0);
+        });
+
+        it("burn without allowance fails", async function () {
+            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0});
+
+            await expectThrow(factory.burn(amount, {from: merchant0}));
+        });
+
+        it("burn without being the configured factory in controller fails", async function () {
+            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
+            await wbtc.approve(factory.address, amount, {from: merchant0});
+            await controller.setFactory(other);
+            await expectThrow(
+                    factory.burn(amount, {from: merchant0}),
+                    "sender not authorized for minting or burning"
+            );
         });
 
         it("burn sets request status to pending", async function () {
@@ -345,6 +368,10 @@ contract('Factory', function(accounts) {
             assert.equal(custodianBtcDepositAddress, custodianBtcDepositAddressForMerchant0);
         });
 
+        it("setCustodianBtcDepositAddress with 0 merchant address fails", async function () {
+            await expectThrow(factory.setCustodianBtcDepositAddress(0, custodianBtcDepositAddressForMerchant0, {from}), "invalid merchant address");
+        });
+
         it("setCustodianBtcDepositAddress with empty string reverts", async function () {
             await expectThrow(
                 factory.setCustodianBtcDepositAddress(merchant0, "", {from}),
@@ -396,6 +423,15 @@ contract('Factory', function(accounts) {
             await expectThrow(
                     factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
                     "request is not pending"
+            );
+        });
+
+        it("confirmMintRequest without being the configured factory in controller fails", async function () {
+            await controller.setFactory(other);
+            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await expectThrow(
+                    factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
+                    "sender not authorized for minting or burning"
             );
         });
 
@@ -531,6 +567,10 @@ contract('Factory', function(accounts) {
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_APPROVED);
         });
 
+        it("confirmBurnRequest with 0 hash fails", async function () {
+            await expectThrow(factory.confirmBurnRequest(0, btcTxid0, {from}), "request hash is 0");
+        });
+
         it("confirmBurnRequest with non exsting request hash", async function () {
             const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from})
@@ -634,6 +674,10 @@ contract('Factory', function(accounts) {
         const from = merchant0;
         const amount = 60;
 
+        it("check creae contract with 0 controller address fails", async function () {
+            await expectThrow(Factory.new(0), "invalid _controller address");
+        });
+
         it("getMintRequestsLength", async function () {
             const lengthBefore = await factory.getMintRequestsLength();
             assert.equal(lengthBefore, 0);
@@ -662,6 +706,20 @@ contract('Factory', function(accounts) {
 
             const lengthAfter = await factory.getBurnRequestsLength();
             assert.equal(lengthAfter, 3);
+        });
+
+        it("getMintRequests with invalid nonce", async function () {
+            const lengthBefore = await factory.getMintRequestsLength();
+            assert.equal(lengthBefore, 0);
+            
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+
+            const lengthAfter = await factory.getMintRequestsLength();
+            assert.equal(lengthAfter, 5);
         });
     });
 });
