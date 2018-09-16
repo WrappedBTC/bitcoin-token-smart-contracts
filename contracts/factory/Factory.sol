@@ -6,7 +6,7 @@ import "../controller/ControllerInterface.sol";
 
 contract Factory is OwnableContract {
 
-    enum RequestStatus {PENDING, CANCELED, APPROVED, REJECTED, UNREACHABLE}
+    enum RequestStatus {PENDING, CANCELED, APPROVED, REJECTED}
 
     struct Request {
         address requester; // sender of the request.
@@ -358,7 +358,7 @@ contract Factory is OwnableContract {
             return "rejected";
         } else {
             // this fallback can never be reached.
-            return "unreachable";
+            return "unknown";
         }
     }
 

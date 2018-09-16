@@ -26,7 +26,6 @@ const REQUEST_STATUS_PENDING            = "pending"
 const REQUEST_STATUS_CANCELED           = "canceled"
 const REQUEST_STATUS_APPROVED           = "approved"
 const REQUEST_STATUS_REJECTED           = "rejected"
-const REQUEST_STATUS_UNREACHABLE        = "unreachable"
 
 contract('Factory', function(accounts) {
 
@@ -721,11 +720,6 @@ contract('Factory', function(accounts) {
 
             const lengthAfter = await factory.getMintRequestsLength();
             assert.equal(lengthAfter, 5);
-        });
-
-        it("get status string with unknown value", async function () {
-            const status = await factory.getStatusString(4);
-            assert.equal(status, "unreachable");
         });
     });
 });
