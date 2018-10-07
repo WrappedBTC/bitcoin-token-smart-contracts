@@ -22,7 +22,6 @@ contract Factory is OwnableContract {
 
     // mapping between merchant to the corresponding custodian deposit address, used in the minting process.
     // by using a different deposit address per merchant the custodian can identify which merchant deposited.
-    // all custodians are assumed to use the same deposit address per merchant.
     mapping(address=>string) public custodianBtcDepositAddress;
 
     // mapping between merchant to the its deposit address where btc should be moved to, used in the burning process.
@@ -53,7 +52,7 @@ contract Factory is OwnableContract {
         _;
     }
 
-    event CustodianBtcDepositAddressSet(address indexed merchant, string btcDepositAddress, address sender);
+    event CustodianBtcDepositAddressSet(address indexed merchant, address indexed sender, string btcDepositAddress);
 
     function setCustodianBtcDepositAddress(
         address merchant,
@@ -67,7 +66,7 @@ contract Factory is OwnableContract {
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
         custodianBtcDepositAddress[merchant] = btcDepositAddress;
-        emit CustodianBtcDepositAddressSet(merchant, btcDepositAddress, msg.sender);
+        emit CustodianBtcDepositAddressSet(merchant, msg.sender, btcDepositAddress);
         return true;
     }
 
@@ -334,32 +333,9 @@ contract Factory is OwnableContract {
         return burnRequests.length;
     }
 
-    function getTimestamp() public view returns (uint) {
+    function getTimestamp() internal view returns (uint) {
         // timestamp is only used for data maintaining purpose, it is not relied on for critical logic.
         return block.timestamp; // solhint-disable-line not-rely-on-time
-    }
-
-    function compareStrings (string a, string b) public pure returns (bool) {
-        return (keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b)));
-    }
-
-    function isEmptyString (string a) public pure returns (bool) {
-        return (compareStrings(a, ""));
-    }
-
-    function getStatusString(RequestStatus status) public pure returns (string) {
-        if (status == RequestStatus.PENDING) {
-            return "pending";
-        } else if (status == RequestStatus.CANCELED) {
-            return "canceled";
-        } else if (status == RequestStatus.APPROVED) {
-            return "approved";
-        } else if (status == RequestStatus.REJECTED) {
-            return "rejected";
-        } else {
-            // this fallback can never be reached.
-            return "unknown";
-        }
     }
 
     function getPendingMintRequest(bytes32 requestHash) internal view returns (uint nonce, Request memory request) {
@@ -382,7 +358,7 @@ contract Factory is OwnableContract {
     }
 
     function calcRequestHash(Request request) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked(
+        return keccak256(abi.encode(
             request.requester,
             request.amount,
             request.btcDepositAddress,
@@ -390,5 +366,28 @@ contract Factory is OwnableContract {
             request.nonce,
             request.timestamp
         ));
+    }
+
+    function compareStrings (string a, string b) internal pure returns (bool) {
+        return (keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b)));
+    }
+
+    function isEmptyString (string a) internal pure returns (bool) {
+        return (compareStrings(a, ""));
+    }
+
+    function getStatusString(RequestStatus status) internal pure returns (string) {
+        if (status == RequestStatus.PENDING) {
+            return "pending";
+        } else if (status == RequestStatus.CANCELED) {
+            return "canceled";
+        } else if (status == RequestStatus.APPROVED) {
+            return "approved";
+        } else if (status == RequestStatus.REJECTED) {
+            return "rejected";
+        } else {
+            // this fallback can never be reached.
+            return "unknown";
+        }
     }
 }

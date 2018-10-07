@@ -216,8 +216,8 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
         ////////////////////////////////////////////////////////////
 
-        console.log("membersContract.methods.addCustodian: " + accountCustodianAddress)
-        await sendTx(membersContract.methods.addCustodian(accountCustodianAddress), account);
+        console.log("membersContract.methods.setCustodian: " + accountCustodianAddress)
+        await sendTx(membersContract.methods.setCustodian(accountCustodianAddress), account);
 
         console.log("membersContract.methods.addMerchant: " + accountMerchantAddress)
         await sendTx(membersContract.methods.addMerchant(accountMerchantAddress), account);

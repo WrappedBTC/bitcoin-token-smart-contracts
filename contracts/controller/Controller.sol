@@ -24,7 +24,7 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     }
 
     // setters
-    event MembersSet(MembersInterface members);
+    event MembersSet(MembersInterface indexed members);
 
     function setMembers(MembersInterface _members) external onlyOwner returns (bool) {
         require(_members != address(0), "invalid _members address");
@@ -33,7 +33,7 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
         return true;
     }
 
-    event FactorySet(address factory);
+    event FactorySet(address indexed factory);
 
     function setFactory(address _factory) external onlyOwner returns (bool) {
         require(_factory != address(0), "invalid _factory address");
@@ -62,11 +62,13 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     // only factory actions on token
     function mint(address to, uint amount) external onlyFactory returns (bool) {
         require(to != address(0), "invalid to address");
+        require(!token.paused(), "token is paused.");
         require(token.mint(to, amount), "minting failed.");
         return true;
     }
 
     function burn(uint value) external onlyFactory returns (bool) {
+        require(!token.paused(), "token is paused.");
         token.burn(value);
         return true;
     }
