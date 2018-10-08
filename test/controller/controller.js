@@ -99,9 +99,24 @@ contract('Controller', function(accounts) {
         });
 
         it("should check transfer fails after pause.", async function () {
-            await controller.pause();
             await controller.mint(admin, 100, {from: factory});
+            await controller.pause();
             await expectThrow(wbtc.transfer(other, 20));
+        });
+
+        it("should check mint fails after pause.", async function () {
+            await controller.pause();
+            await expectThrow(controller.mint(admin, 100, {from: factory}));
+        });
+
+        it("should check burn fails after pause.", async function () {
+            await controller.mint(factory, 100, {from: factory});
+
+            // when burning through factory we only need to approve.
+            // here we transfer since checking internally.
+            await wbtc.transfer(controller.address, 20, {from: factory})
+            await controller.pause();
+            await expectThrow(controller.burn(20, {from: factory}));
         });
 
         it("should check pause emits an event.", async function () {
@@ -225,7 +240,7 @@ contract('Controller', function(accounts) {
             const isCustodianBefore = await controller.isCustodian(other);
             assert.equal(isCustodianBefore, false);
 
-            await members.addCustodian(other);
+            await members.setCustodian(other);
             const isCustodianAfter = await controller.isCustodian(other);
             assert.equal(isCustodianAfter, true);
         });

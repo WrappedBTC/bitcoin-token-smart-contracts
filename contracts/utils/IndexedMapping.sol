@@ -28,6 +28,7 @@ library IndexedMapping {
 
         // remove value
         delete self.valueExists[val];
+        delete self.valueIndex[val];
 
         // replace it with last value
         self.valueList[index] = lastVal;
