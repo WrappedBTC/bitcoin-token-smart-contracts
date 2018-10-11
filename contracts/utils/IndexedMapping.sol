@@ -26,14 +26,14 @@ library IndexedMapping {
         index = self.valueIndex[val];
         lastVal = self.valueList[self.valueList.length - 1];
 
-        // remove value
-        delete self.valueExists[val];
-        delete self.valueIndex[val];
-
-        // replace it with last value
+        // replace value with last value
         self.valueList[index] = lastVal;
         self.valueIndex[lastVal] = index;
         self.valueList.length--;
+
+        // remove value
+        delete self.valueExists[val];
+        delete self.valueIndex[val];
 
         return true;
     }
