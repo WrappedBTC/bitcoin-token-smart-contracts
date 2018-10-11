@@ -132,6 +132,67 @@ contract('IndexedMappingWrapper', function(accounts) {
         await expectThrow(indexedMappingWrapper.getValue(0));
     });
 
+    it("multiple (3) adds and remove first, check remaining values.", async function () {
+        await indexedMappingWrapper.add(user1);
+        await indexedMappingWrapper.add(user2);
+        await indexedMappingWrapper.add(user3);
+
+        await indexedMappingWrapper.remove(user1);
+
+        valueList = await indexedMappingWrapper.getValueList();
+        (valueList.length).should.equal(2);
+        (valueList[0]).should.equal(user3);
+        (valueList[1]).should.equal(user2);
+
+        exists1 = await indexedMappingWrapper.exists(user1);
+        exists1.should.equal(false);
+        exists2 = await indexedMappingWrapper.exists(user2);
+        exists2.should.equal(true);
+        exists3 = await indexedMappingWrapper.exists(user3);
+        exists3.should.equal(true);
+        
+    });
+
+    it("multiple (3) adds and remove second, check remaining values.", async function () {
+        await indexedMappingWrapper.add(user1);
+        await indexedMappingWrapper.add(user2);
+        await indexedMappingWrapper.add(user3);
+
+        await indexedMappingWrapper.remove(user2);
+
+        valueList = await indexedMappingWrapper.getValueList();
+        (valueList.length).should.equal(2);
+        (valueList[0]).should.equal(user1);
+        (valueList[1]).should.equal(user3);
+
+        exists1 = await indexedMappingWrapper.exists(user1);
+        exists1.should.equal(true);
+        exists2 = await indexedMappingWrapper.exists(user2);
+        exists2.should.equal(false);
+        exists3 = await indexedMappingWrapper.exists(user3);
+        exists3.should.equal(true);
+    });
+
+    it("multiple (3) adds and remove last, check remaining values.", async function () {
+        await indexedMappingWrapper.add(user1);
+        await indexedMappingWrapper.add(user2);
+        await indexedMappingWrapper.add(user3);
+
+        await indexedMappingWrapper.remove(user3);
+
+        valueList = await indexedMappingWrapper.getValueList();
+        (valueList.length).should.equal(2);
+        (valueList[0]).should.equal(user1);
+        (valueList[1]).should.equal(user2);
+
+        exists1 = await indexedMappingWrapper.exists(user1);
+        exists1.should.equal(true);
+        exists2 = await indexedMappingWrapper.exists(user2);
+        exists2.should.equal(true);
+        exists3 = await indexedMappingWrapper.exists(user3);
+        exists3.should.equal(false);
+    });
+
     it("multiple (3) adds and remove all, check value list is empty.", async function () {
         await indexedMappingWrapper.add(user1);
         await indexedMappingWrapper.add(user2);
