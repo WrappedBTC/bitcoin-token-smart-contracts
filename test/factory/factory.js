@@ -32,7 +32,6 @@ contract('Factory', function(accounts) {
     const admin = accounts[0];
     const other = accounts[1];
     const custodian0 = accounts[2];
-    const custodian1 = accounts[3];
     const merchant0 = accounts[4];
     const merchant1 = accounts[5];
     const merchant2 = accounts[6];
@@ -60,8 +59,7 @@ contract('Factory', function(accounts) {
         await wbtc.transferOwnership(controller.address)
         await controller.callClaimOwnership(wbtc.address)
 
-        await members.addCustodian(custodian0);
-        await members.addCustodian(custodian1);
+        await members.setCustodian(custodian0);
         await members.addMerchant(merchant0);
         await members.addMerchant(merchant1);
         await members.addMerchant(merchant2); // this merchant does not set btc deposit address
@@ -70,7 +68,7 @@ contract('Factory', function(accounts) {
         await factory.setMerchantBtcDepositAddress(merchant1BtcDepositAddress, {from: merchant1});
         
         await factory.setCustodianBtcDepositAddress(merchant0, custodianBtcDepositAddressForMerchant0, {from: custodian0});
-        await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAddressForMerchant1, {from: custodian1});
+        await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAddressForMerchant1, {from: custodian0});
         await factory.setCustodianBtcDepositAddress(merchant2, custodianBtcDepositAddressForMerchant2, {from: custodian0});
 
     });

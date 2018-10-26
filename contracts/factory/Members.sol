@@ -7,8 +7,9 @@ import "../factory/MembersInterface.sol";
 
 contract Members is MembersInterface, OwnableContract {
 
+    address public custodian;
+
     using IndexedMapping for IndexedMapping.Data;
-    IndexedMapping.Data internal custodians;
     IndexedMapping.Data internal merchants;
 
     constructor(address _owner) public {
@@ -16,27 +17,17 @@ contract Members is MembersInterface, OwnableContract {
         owner = _owner;
     }
 
-    event CustodianAdd(address custodian);
+    event CustodianSet(address indexed custodian);
 
-    function addCustodian(address custodian) external onlyOwner returns (bool) {
-        require(custodian != address(0), "invalid custodian address");
-        require(custodians.add(custodian), "custodian add failed"); 
+    function setCustodian(address _custodian) external onlyOwner returns (bool) {
+        require(_custodian != address(0), "invalid custodian address");
+        custodian = _custodian;
 
-        emit CustodianAdd(custodian);
+        emit CustodianSet(_custodian);
         return true;
     }
 
-    event CustodianRemove(address custodian);
-
-    function removeCustodian(address custodian) external onlyOwner returns (bool) {
-        require(custodian != address(0), "invalid custodian address");
-        require(custodians.remove(custodian), "custodian remove failed");
-
-        emit CustodianRemove(custodian);
-        return true;
-    }
-
-    event MerchantAdd(address merchant);
+    event MerchantAdd(address indexed merchant);
 
     function addMerchant(address merchant) external onlyOwner returns (bool) {
         require(merchant != address(0), "invalid merchant address");
@@ -46,7 +37,7 @@ contract Members is MembersInterface, OwnableContract {
         return true;
     } 
 
-    event MerchantRemove(address custodian);
+    event MerchantRemove(address indexed merchant);
 
     function removeMerchant(address merchant) external onlyOwner returns (bool) {
         require(merchant != address(0), "invalid merchant address");
@@ -57,15 +48,7 @@ contract Members is MembersInterface, OwnableContract {
     }
 
     function isCustodian(address addr) external view returns (bool) {
-        return custodians.exists(addr);
-    }
-
-    function getCustodian(uint index) external view returns (address) {
-        return custodians.getValue(index);
-    }
-
-    function getCustodians() external view returns (address[]) {
-        return custodians.getValueList();
+        return (addr == custodian);
     }
 
     function isMerchant(address addr) external view returns (bool) {
