@@ -35,9 +35,11 @@ function shouldBehaveLikeOwnable (accounts) {
     });
 
     it('does not lose owner after renouncement', async function () {
+        const ownerBefore = await this.ownable.owner();
         await expectThrow(this.ownable.renounceOwnership(), EVMRevert);
-        const owner = await this.ownable.owner();
-        owner.should.not.eq(ZERO_ADDRESS);
+        const ownerAfter = await this.ownable.owner();
+        ownerAfter.should.not.eq(ZERO_ADDRESS);
+        ownerAfter.should.eq(ownerBefore);
     });
 
     it('should prevent non-owners from renouncement', async function () {

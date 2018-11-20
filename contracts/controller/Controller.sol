@@ -86,8 +86,8 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
         return token;
     }
 
-    // overriding 
+    // overriding
     function renounceOwnership() public onlyOwner {
-        revert("renouncing ownership is not supported.");
+        revert("renouncing ownership is blocked.");
     }
 }

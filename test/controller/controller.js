@@ -12,7 +12,6 @@ contract('Controller', function(accounts) {
     const other = accounts[1];
     const factory = accounts[2]; // factory simulated as a regular address here
     const otherFactory = accounts[3];
-    const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
     let wbtc;
     let controller;
@@ -156,7 +155,7 @@ contract('Controller', function(accounts) {
         it('does not lose owner after renouncement', async function () {
             await expectThrow(controller.renounceOwnership());
             const owner = await controller.owner();
-            assert.notEqual(owner, ZERO_ADDRESS);
+            assert.equal(owner, admin);
         });
     });
 
