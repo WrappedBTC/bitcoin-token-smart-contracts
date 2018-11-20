@@ -85,4 +85,9 @@ contract Controller is ControllerInterface, OwnableContract, OwnableContractOwne
     function getWBTC() external view returns (ERC20) {
         return token;
     }
+
+    // overriding 
+    function renounceOwnership() public onlyOwner {
+        revert("renouncing ownership is not supported.");
+    }
 }

@@ -370,6 +370,10 @@ contract('Factory', function(accounts) {
             await expectThrow(factory.setCustodianBtcDepositAddress(0, custodianBtcDepositAddressForMerchant0, {from}), "invalid merchant address");
         });
 
+        it("setCustodianBtcDepositAddress with faulty merchant address fails", async function () {
+            await expectThrow(factory.setCustodianBtcDepositAddress(other, custodianBtcDepositAddressForMerchant0, {from}), "merchant address is not a real merchant.");
+        });
+
         it("setCustodianBtcDepositAddress with empty string reverts", async function () {
             await expectThrow(
                 factory.setCustodianBtcDepositAddress(merchant0, "", {from}),
