@@ -151,6 +151,12 @@ contract('Controller', function(accounts) {
             assert.equal(logs.length, 1);
             assert.equal(logs[0].event, 'Unpaused');
         });
+
+        it('does not lose owner after renouncement', async function () {
+            await expectThrow(controller.renounceOwnership());
+            const owner = await controller.owner();
+            assert.equal(owner, admin);
+        });
     });
 
     describe('not as owner', function () {

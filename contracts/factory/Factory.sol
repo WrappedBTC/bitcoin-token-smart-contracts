@@ -63,6 +63,7 @@ contract Factory is OwnableContract {
         returns (bool) 
     {
         require(merchant != 0, "invalid merchant address");
+        require(controller.isMerchant(merchant), "merchant address is not a real merchant.");
         require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
 
         custodianBtcDepositAddress[merchant] = btcDepositAddress;

@@ -34,11 +34,12 @@ function shouldBehaveLikeOwnable (accounts) {
       await this.ownable.transferOwnership(null, { from: originalOwner });
     });
 
-    it('loses owner after renouncement', async function () {
-      await this.ownable.renounceOwnership();
-      const owner = await this.ownable.owner();
-
-      owner.should.eq(ZERO_ADDRESS);
+    it('does not lose owner after renouncement', async function () {
+        const ownerBefore = await this.ownable.owner();
+        await expectThrow(this.ownable.renounceOwnership(), EVMRevert);
+        const ownerAfter = await this.ownable.owner();
+        ownerAfter.should.not.eq(ZERO_ADDRESS);
+        ownerAfter.should.eq(ownerBefore);
     });
 
     it('should prevent non-owners from renouncement', async function () {

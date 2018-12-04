@@ -18,4 +18,9 @@ contract WBTC is StandardToken, DetailedERC20("Wrapped BTC", "WBTC", 8),
     function finishMinting() public onlyOwner returns (bool) {
         return false;
     }
+
+    function renounceOwnership() public onlyOwner {
+        revert("renouncing ownership is blocked");
+    }
 }
+
