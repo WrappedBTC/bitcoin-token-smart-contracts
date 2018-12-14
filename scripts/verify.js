@@ -4,7 +4,6 @@ const Web3 = require('web3');
 //general purpose npm moudles
 const fs = require('fs');
 const assert = require('assert');
-const compareVersions = require('compare-versions');
 const solc = require('solc');
 
 process.on('unhandledRejection', console.error.bind(console))
@@ -56,7 +55,8 @@ async function check(mainnetUrl) {
     /////////////////////////////////////////////////////////////
     console.log("starting compilation");
     const solcOutput = await solc.compile({ sources: compilationInput }, 1, findImports);
-    console.log(solcOutput.errors);
+    if(solcOutput.errors == undefined) console.log("no complication errors");
+    else console.log(solcOutput.errors);
     console.log("finished compilation");
 
     const wbtcContract = await getContractAndCompareCode("WBTC",wbtcAddress,solcOutput);
@@ -82,11 +82,15 @@ async function check(mainnetUrl) {
     const factoryContract = await getContractAndCompareCode("Factory",factoryAddress,solcOutput);
     for(let i = 0 ; i < merchants.length; i++) {
       const merchantDepostAddress = await factoryContract.methods.merchantBtcDepositAddress(merchants[i]).call();
-      console.log("merchat", merchants[i],"deposit address",merchantDepostAddress);
+      if(merchantDepostAddress == "") console.log("warning: merchant", merchants[i],"deposit address undefined!!!");
+      else console.log("merchant", merchants[i],"deposit address",merchantDepostAddress);
 
       const custodianDepositAddress = await factoryContract.methods.custodianBtcDepositAddress(merchants[i]).call();
-      console.log("merchat", merchants[i],"custodian deposit address",custodianDepositAddress);
+      if(custodianDepositAddress == "") console.log("warning: merchant", merchants[i],"custodian deposit address undefined!!!");
+      else console.log("merchant", merchants[i],"custodian deposit address",custodianDepositAddress);
     }
+
+    console.log("\n\n\n");
 }
 
 
