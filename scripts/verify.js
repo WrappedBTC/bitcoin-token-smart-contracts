@@ -3,16 +3,17 @@ const Web3 = require('web3');
 
 //general purpose npm moudles
 const fs = require('fs');
+const path = require('path');
 const assert = require('assert');
 const solc = require('solc');
 
 process.on('unhandledRejection', console.error.bind(console))
 
 //contract sources
-const controllerContractPath = "./../contracts/controller/";
-const factoryContractPath = "./../contracts/factory/";
-const tokenContractPath = "./../contracts/token/";
-const utilsContractPath = "./../contracts/utils/";
+const controllerContractPath = path.join(__dirname, "./../contracts/controller/")
+const factoryContractPath = path.join(__dirname, "./../contracts/factory/")
+const tokenContractPath = path.join(__dirname, "./../contracts/token/")
+const utilsContractPath = path.join(__dirname, "./../contracts/utils/")
 
 const compilationInput = {
     "OwnableContract.sol" : fs.readFileSync(utilsContractPath + 'OwnableContract.sol', 'ascii'),
@@ -28,9 +29,9 @@ const compilationInput = {
 
 function findImports (_path) {
     if(_path.includes("openzeppelin-solidity"))
-        return { contents: fs.readFileSync("./../node_modules/" + _path, 'ascii') }
+        return { contents: fs.readFileSync(path.join(__dirname, "./../node_modules/" + _path), 'ascii') }
     else
-        return { contents: fs.readFileSync("./../contracts/" + _path, 'ascii') }
+        return { contents: fs.readFileSync(path.join(__dirname, "./../contracts/" + _path), 'ascii') }
 }
 
 const mainnetUrls = ['https://mainnet.infura.io',
