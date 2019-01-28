@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
 const solc = require('solc');
+const btcBalance = require('crypto-balances');
 
 process.on('unhandledRejection', console.error.bind(console))
 
@@ -52,6 +53,9 @@ async function check(mainnetUrl) {
     console.log("wbtc address", wbtcAddress);
     console.log("web3 url", mainnetUrl);
 
+    let wbtcTotalSupply = 0;
+    let btcTotalInventory = 0;
+
     web3 = new Web3(new Web3.providers.HttpProvider(mainnetUrl));
     /////////////////////////////////////////////////////////////
     console.log("starting compilation");
@@ -63,6 +67,8 @@ async function check(mainnetUrl) {
     const wbtcContract = await getContractAndCompareCode("WBTC",wbtcAddress,solcOutput);
     const totalSupply = await wbtcContract.methods.totalSupply().call();
     console.log("totalSupply", totalSupply.toString());
+
+    wbtcTotalSupply = parseFloat(totalSupply) / (10**8);
 
     const controllerAddress = await wbtcContract.methods.owner().call();
     console.log("Controller", controllerAddress);
@@ -88,8 +94,19 @@ async function check(mainnetUrl) {
 
       const custodianDepositAddress = await factoryContract.methods.custodianBtcDepositAddress(merchants[i]).call();
       if(custodianDepositAddress == "") console.log("warning: merchant", merchants[i],"custodian deposit address undefined!!!");
-      else console.log("merchant", merchants[i],"custodian deposit address",custodianDepositAddress);
+      else {
+        console.log("merchant", merchants[i],"custodian deposit address",custodianDepositAddress);
+        const balanceResult = await btcBalance(custodianDepositAddress);
+        const balanceQty = parseFloat(balanceResult[0]["quantity"]);
+        btcTotalInventory += balanceQty;
+        //console.log(btcTotalInventory,balanceQty);
+      }
     }
+
+    console.log("BTC in custoday", btcTotalInventory);
+    console.log("WBTC total supply", wbtcTotalSupply);
+    if(btcTotalInventory >= wbtcTotalSupply) console.log("BTC in custody >= WBTC total supply, ok");
+    else console.log("BTC in custody < WBTC total supply, error");
 
     console.log("\n\n\n");
 }

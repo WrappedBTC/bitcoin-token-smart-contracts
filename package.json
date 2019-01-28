@@ -21,6 +21,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^2.0.2",
+    "crypto-balances": "^2.1.3",
     "find-parent-dir": "^0.3.0",
     "openzeppelin-solidity": "1.12.0",
     "rlp": "^2.1.0",
