@@ -99,14 +99,13 @@ async function check(mainnetUrl) {
         const balanceResult = await btcBalance(custodianDepositAddress);
         const balanceQty = parseFloat(balanceResult[0]["quantity"]);
         btcTotalInventory += balanceQty;
-        //console.log(btcTotalInventory,balanceQty);
       }
     }
 
     console.log("BTC in custoday", btcTotalInventory);
     console.log("WBTC total supply", wbtcTotalSupply);
     if(btcTotalInventory >= wbtcTotalSupply) console.log("BTC in custody >= WBTC total supply, ok");
-    else console.log("BTC in custody < WBTC total supply, error");
+    else console.log("error: BTC in custody < WBTC total supply");
 
     console.log("\n\n\n");
 }
