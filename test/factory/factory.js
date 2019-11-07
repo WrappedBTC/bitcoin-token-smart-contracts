@@ -36,16 +36,16 @@ contract('Factory', function(accounts) {
     const merchant1 = accounts[5];
     const merchant2 = accounts[6];
 
-    const custodianBtcDepositAddressForMerchant0 = "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY" 
-    const custodianBtcDepositAddressForMerchant1 = "1CK6KHY6MHgYvmRQ4PAafKYDrg1ejbH1cE"
-    const custodianBtcDepositAddressForMerchant2 = "1LCgURAohwmQas667XmMT8VeEdPSu9ThpC"
-    const merchant0BtcDepositAddress = "33186S4aTEmv67cAygmzL9CWzoMNV7RNCn"
-    const merchant1BtcDepositAddress = "3CRCW2DLqBa336QPhJK3SvLVRCueckcJ1f "
-    const otherBtcAddress = "15kiNKfDWsq7UsPg87UwxA8rVvWAjzRkYS"
+    const custodianDepositAddressForMerchant0 = "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY" 
+    const custodianDepositAddressForMerchant1 = "1CK6KHY6MHgYvmRQ4PAafKYDrg1ejbH1cE"
+    const custodianDepositAddressForMerchant2 = "1LCgURAohwmQas667XmMT8VeEdPSu9ThpC"
+    const merchant0DepositAddress = "33186S4aTEmv67cAygmzL9CWzoMNV7RNCn"
+    const merchant1DepositAddress = "3CRCW2DLqBa336QPhJK3SvLVRCueckcJ1f "
+    const otherAddress = "15kiNKfDWsq7UsPg87UwxA8rVvWAjzRkYS"
 
-    const btcTxid0 = "955c0816db69040dddf858c599c5e5ea915f193b65fde641021a297cce754a25"
-    const btcTxid1 = "5ad004d3cae3204048ceb2b119b060a5e8cf07b94e39d92a79386677106312ed"
-    const btcTxid2 = "a2f2bd19f2d294eec53e0421069c82b949253260c2cadf54eb1f823856923799"
+    const txid0 = "955c0816db69040dddf858c599c5e5ea915f193b65fde641021a297cce754a25"
+    const txid1 = "5ad004d3cae3204048ceb2b119b060a5e8cf07b94e39d92a79386677106312ed"
+    const txid2 = "a2f2bd19f2d294eec53e0421069c82b949253260c2cadf54eb1f823856923799"
 
     beforeEach('create contracts', async function () {
         wbtc = await WBTC.new();
@@ -64,12 +64,12 @@ contract('Factory', function(accounts) {
         await members.addMerchant(merchant1);
         await members.addMerchant(merchant2); // this merchant does not set btc deposit address
 
-        await factory.setMerchantBtcDepositAddress(merchant0BtcDepositAddress, {from: merchant0});
-        await factory.setMerchantBtcDepositAddress(merchant1BtcDepositAddress, {from: merchant1});
+        await factory.setMerchantDepositAddress(merchant0DepositAddress, {from: merchant0});
+        await factory.setMerchantDepositAddress(merchant1DepositAddress, {from: merchant1});
         
-        await factory.setCustodianBtcDepositAddress(merchant0, custodianBtcDepositAddressForMerchant0, {from: custodian0});
-        await factory.setCustodianBtcDepositAddress(merchant1, custodianBtcDepositAddressForMerchant1, {from: custodian0});
-        await factory.setCustodianBtcDepositAddress(merchant2, custodianBtcDepositAddressForMerchant2, {from: custodian0});
+        await factory.setCustodianDepositAddress(merchant0, custodianDepositAddressForMerchant0, {from: custodian0});
+        await factory.setCustodianDepositAddress(merchant1, custodianDepositAddressForMerchant1, {from: custodian0});
+        await factory.setCustodianDepositAddress(merchant2, custodianDepositAddressForMerchant2, {from: custodian0});
 
     });
 
@@ -77,29 +77,29 @@ contract('Factory', function(accounts) {
         const from = merchant0;
         const amount = 100;
 
-        it("check setMerchantBtcDepositAddress", async function () {
-            await factory.setMerchantBtcDepositAddress(merchant0BtcDepositAddress, {from});
-            const merchantBtcDepositAddress = await factory.merchantBtcDepositAddress(merchant0);
-            assert.equal(merchantBtcDepositAddress, merchant0BtcDepositAddress);
+        it("check setMerchantDepositAddress", async function () {
+            await factory.setMerchantDepositAddress(merchant0DepositAddress, {from});
+            const merchantDepositAddress = await factory.merchantDepositAddress(merchant0);
+            assert.equal(merchantDepositAddress, merchant0DepositAddress);
         });
 
-        it("setMerchantBtcDepositAddress with empty string reverts", async function () {
-            await expectThrow(factory.setMerchantBtcDepositAddress("", {from}));
+        it("setMerchantDepositAddress with empty string reverts", async function () {
+            await expectThrow(factory.setMerchantDepositAddress("", {from}));
         });
 
-        it("setMerchantBtcDepositAddress emits event", async function () {
-            const { logs } = await factory.setMerchantBtcDepositAddress(merchant0BtcDepositAddress, {from});
+        it("setMerchantDepositAddress emits event", async function () {
+            const { logs } = await factory.setMerchantDepositAddress(merchant0DepositAddress, {from});
             assert.equal(logs.length, 1);
-            assert.equal(logs[0].event, 'MerchantBtcDepositAddressSet');
+            assert.equal(logs[0].event, 'MerchantDepositAddressSet');
             assert.equal(logs[0].args.merchant, merchant0);
-            assert.equal(logs[0].args.btcDepositAddress, merchant0BtcDepositAddress);
+            assert.equal(logs[0].args.depositAddress, merchant0DepositAddress);
         });
 
         it("addMintRequest", async function () {
             const balanceBefore = await wbtc.balanceOf(merchant0)
             assert.equal(balanceBefore, 0);
 
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const timestamp = logs[0].args.timestamp;
             const hash = logs[0].args.requestHash;
 
@@ -107,8 +107,8 @@ contract('Factory', function(accounts) {
             assert.equal(request[REQUEST_NONCE_FIELD], 0)
             assert.equal(request[REQUEST_REQUESTER_FIELD], merchant0)
             assert.equal(request[REQUEST_AMOUNT_FIELD], amount)
-            assert.equal(request[REQUEST_BTC_DEPOSIT_ADDRESS_FIELD], custodianBtcDepositAddressForMerchant0)
-            assert.equal(request[REQUEST_BTC_TXID_FIELD], btcTxid0)
+            assert.equal(request[REQUEST_BTC_DEPOSIT_ADDRESS_FIELD], custodianDepositAddressForMerchant0)
+            assert.equal(request[REQUEST_BTC_TXID_FIELD], txid0)
             assert.equal((request[REQUEST_TIMESTAMP_FIELD]).valueOf(), timestamp.valueOf())
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_PENDING)
             assert.equal(request[REQUEST_HASH_FIELD], hash)
@@ -119,51 +119,51 @@ contract('Factory', function(accounts) {
         });
 
         it("addMintRequest with empty btcDepositAdress fails", async function () {
-            await expectThrow(factory.addMintRequest(amount, btcTxid0, "", {from}));
+            await expectThrow(factory.addMintRequest(amount, txid0, "", {from}));
         });
 
         it("addMintRequest with non existing btcDepositAdress fails", async function () {
-            await expectThrow(factory.addMintRequest(amount, btcTxid0, otherBtcAddress, {from}));
+            await expectThrow(factory.addMintRequest(amount, txid0, otherAddress, {from}));
         });
 
         it("addMintRequest with other merchant's custodian btcDepositAdress fails", async function () {
-            await expectThrow(factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from}));
+            await expectThrow(factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant1, {from}));
         });
 
         it("addMintRequest sets request status to pending", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
 
             const request = await factory.getMintRequest(0);
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_PENDING)
         });
 
         it("addMintRequest emits an event", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             assert.equal(logs.length, 1);
             assert.equal(logs[0].event, 'MintRequestAdd');
 
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
             assert.equal(logs[0].args.amount, amount);
-            assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
-            assert.equal(logs[0].args.btcTxid, btcTxid0);
+            assert.equal(logs[0].args.depositAddress, custodianDepositAddressForMerchant0);
+            assert.equal(logs[0].args.txid, txid0);
             assert.notEqual(logs[0].args.timestamp, 0);
             assert.notEqual(logs[0].args.requestHash, 0);
         });
 
         it("add several mint requests and see nonce is incremented", async function () {
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid1, custodianBtcDepositAddressForMerchant0, {from});
-            const { logs } = await factory.addMintRequest(amount, btcTxid2, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid1, custodianDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid2, custodianDepositAddressForMerchant0, {from});
 
             assert.equal(logs[0].args.nonce, 2);
             const request = await factory.getMintRequest(2);
             assert.equal(request[REQUEST_NONCE_FIELD], 2)
-            assert.equal(request[REQUEST_BTC_TXID_FIELD], btcTxid2)
+            assert.equal(request[REQUEST_BTC_TXID_FIELD], txid2)
         });
 
         it("cancelMintRequest", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
 
             await factory.cancelMintRequest(hash, {from});
@@ -176,21 +176,21 @@ contract('Factory', function(accounts) {
         });
 
         it("cancelMintRequest for already canceled request fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.cancelMintRequest(hash, {from});
             await expectThrow (factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already confirmed request fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.confirmMintRequest(hash, {from: custodian0});
             await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest for already rejected request fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.rejectMintRequest(hash, {from: custodian0});
             await expectThrow(factory.cancelMintRequest(hash, {from}));
@@ -198,13 +198,13 @@ contract('Factory', function(accounts) {
         });
 
         it("cancelMintRequest for another merchant's request fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant1, {from: merchant1});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant1, {from: merchant1});
             const hash = logs[0].args.requestHash;
             await expectThrow(factory.cancelMintRequest(hash, {from}));
         });
 
         it("cancelMintRequest with unknown request hash fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
 
             const hash = logs[0].args.requestHash;
             const alteredHash = "0x0123456789012345678901234567890123456789012345678901234567890123456789012345"
@@ -214,7 +214,7 @@ contract('Factory', function(accounts) {
         });
 
         it("cancelMintRequest changes request status to canceled", async function () {
-            const {logs} = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const {logs} = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.cancelMintRequest(hash, {from})
 
@@ -223,7 +223,7 @@ contract('Factory', function(accounts) {
         });
 
         it("cancelMintRequeste does not change request hash", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             await factory.cancelMintRequest(hash, {from})
 
@@ -232,7 +232,7 @@ contract('Factory', function(accounts) {
         });
 
         it("cancelMintRequest emits an event", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             const hash = logs[0].args.requestHash;
             const tx = await factory.cancelMintRequest(hash, {from});
 
@@ -246,7 +246,7 @@ contract('Factory', function(accounts) {
         });
 
         it("burn", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
 
             const balanceBefore = await wbtc.balanceOf(merchant0);
@@ -260,16 +260,16 @@ contract('Factory', function(accounts) {
         });
 
         it("burn without setting merchant btcDepositAdress beforehand fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant2, {from: merchant2});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant2, {from: merchant2});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0});
 
             const balanceBefore = await wbtc.balanceOf(merchant2)
             assert.equal(balanceBefore, amount);
 
             await wbtc.approve(factory.address, amount, {from: merchant2});
-            await expectThrow(factory.burn(amount, {from: merchant2}), "merchant btc deposit address was not set");
+            await expectThrow(factory.burn(amount, {from: merchant2}), "merchant asset deposit address was not set");
 
-            await factory.setMerchantBtcDepositAddress(merchant0BtcDepositAddress, {from: merchant2});
+            await factory.setMerchantDepositAddress(merchant0DepositAddress, {from: merchant2});
             await factory.burn(amount, {from: merchant2})
 
             const balanceAfter = await wbtc.balanceOf(merchant2)
@@ -277,14 +277,14 @@ contract('Factory', function(accounts) {
         });
 
         it("burn without allowance fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0});
 
             await expectThrow(factory.burn(amount, {from: merchant0}));
         });
 
         it("burn without being the configured factory in controller fails", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
             await wbtc.approve(factory.address, amount, {from: merchant0});
             await controller.setFactory(other);
@@ -295,7 +295,7 @@ contract('Factory', function(accounts) {
         });
 
         it("burn sets request status to pending", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from: custodian0})
             await wbtc.approve(factory.address, amount, {from});
             await factory.burn(amount, {from});
@@ -305,7 +305,7 @@ contract('Factory', function(accounts) {
         });
 
         it("burn emits an event", async function () {
-            const addTx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const addTx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             await factory.confirmMintRequest(addTx.logs[0].args.requestHash, {from: custodian0})
             await wbtc.approve(factory.address, amount, {from});
             const { logs } = await factory.burn(amount, {from});
@@ -316,8 +316,8 @@ contract('Factory', function(accounts) {
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
             assert.equal(logs[0].args.amount, amount);
-            assert.equal(logs[0].args.btcDepositAddress, merchant0BtcDepositAddress);
-            assert.equal(logs[0].args.btcTxid, null); // txid of burn is sent only upon confirmation.
+            assert.equal(logs[0].args.depositAddress, merchant0DepositAddress);
+            assert.equal(logs[0].args.txid, null); // txid of burn is sent only upon confirmation.
             assert.notEqual(logs[0].args.timestamp, 0);
             assert.notEqual(logs[0].args.requestHash, 0);
         });
@@ -327,16 +327,16 @@ contract('Factory', function(accounts) {
         const from = other;
         const amount = 100;
 
-        it("setMerchantBtcDepositAddress reverts", async function () {
+        it("setMerchantDepositAddress reverts", async function () {
             await expectThrow(
-                factory.setMerchantBtcDepositAddress(merchant0BtcDepositAddress, {from}),
+                factory.setMerchantDepositAddress(merchant0DepositAddress, {from}),
                 "sender not a merchant"
             );
         });
         
         it("addMintRequest reverts", async function () {
             await expectThrow(
-                factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from}),
+                factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from}),
                 "sender not a merchant"
             );
         });
@@ -360,38 +360,38 @@ contract('Factory', function(accounts) {
         const from = custodian0;
         const amount = 100;
 
-        it("setCustodianBtcDepositAddress", async function () {
-            await factory.setCustodianBtcDepositAddress(merchant0, custodianBtcDepositAddressForMerchant0, {from});
-            const custodianBtcDepositAddress = await factory.custodianBtcDepositAddress(merchant0);
-            assert.equal(custodianBtcDepositAddress, custodianBtcDepositAddressForMerchant0);
+        it("setCustodianDepositAddress", async function () {
+            await factory.setCustodianDepositAddress(merchant0, custodianDepositAddressForMerchant0, {from});
+            const custodianDepositAddress = await factory.custodianDepositAddress(merchant0);
+            assert.equal(custodianDepositAddress, custodianDepositAddressForMerchant0);
         });
 
-        it("setCustodianBtcDepositAddress with 0 merchant address fails", async function () {
-            await expectThrow(factory.setCustodianBtcDepositAddress(0, custodianBtcDepositAddressForMerchant0, {from}), "invalid merchant address");
+        it("setCustodianDepositAddress with 0 merchant address fails", async function () {
+            await expectThrow(factory.setCustodianDepositAddress(0, custodianDepositAddressForMerchant0, {from}), "invalid merchant address");
         });
 
-        it("setCustodianBtcDepositAddress with faulty merchant address fails", async function () {
-            await expectThrow(factory.setCustodianBtcDepositAddress(other, custodianBtcDepositAddressForMerchant0, {from}), "merchant address is not a real merchant.");
+        it("setCustodianDepositAddress with faulty merchant address fails", async function () {
+            await expectThrow(factory.setCustodianDepositAddress(other, custodianDepositAddressForMerchant0, {from}), "merchant address is not a real merchant.");
         });
 
-        it("setCustodianBtcDepositAddress with empty string reverts", async function () {
+        it("setCustodianDepositAddress with empty string reverts", async function () {
             await expectThrow(
-                factory.setCustodianBtcDepositAddress(merchant0, "", {from}),
-                "invalid btc deposit address"
+                factory.setCustodianDepositAddress(merchant0, "", {from}),
+                "invalid asset deposit address"
             )
         });
 
-        it("setCustodianBtcDepositAddress emits event", async function () {
-            const { logs } = await factory.setCustodianBtcDepositAddress(merchant0, custodianBtcDepositAddressForMerchant0, {from});
+        it("setCustodianDepositAddress emits event", async function () {
+            const { logs } = await factory.setCustodianDepositAddress(merchant0, custodianDepositAddressForMerchant0, {from});
             assert.equal(logs.length, 1);
-            assert.equal(logs[0].event, 'CustodianBtcDepositAddressSet');
+            assert.equal(logs[0].event, 'CustodianDepositAddressSet');
             assert.equal(logs[0].args.merchant, merchant0);
-            assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
+            assert.equal(logs[0].args.depositAddress, custodianDepositAddressForMerchant0);
             assert.equal(logs[0].args.sender, custodian0);
         });
 
         it("confirmMintRequest", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
 
             const balanceBefore = await wbtc.balanceOf(merchant0)
             assert.equal(balanceBefore, 0);
@@ -403,7 +403,7 @@ contract('Factory', function(accounts) {
         });
         
         it("confirmMintRequest with non exsting request hash", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await expectThrow(
                     factory.confirmMintRequest("hash", {from}),
                     "given request hash does not match a pending request"
@@ -411,7 +411,7 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmMintRequest of cancled request fails", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.cancelMintRequest(tx.logs[0].args.requestHash, {from: merchant0});
             await expectThrow(
                     factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
@@ -420,7 +420,7 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmMintRequest of rejected request fails", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.rejectMintRequest(tx.logs[0].args.requestHash, {from: custodian0});
             await expectThrow(
                     factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
@@ -430,7 +430,7 @@ contract('Factory', function(accounts) {
 
         it("confirmMintRequest without being the configured factory in controller fails", async function () {
             await controller.setFactory(other);
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await expectThrow(
                     factory.confirmMintRequest(tx.logs[0].args.requestHash, {from}),
                     "sender not authorized for minting or burning"
@@ -438,9 +438,9 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmMintRequest of request in the middle of the list (not last)", async function () {
-            const tx0 = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
-            const tx1 = await factory.addMintRequest(amount, btcTxid1, custodianBtcDepositAddressForMerchant0, {from: merchant0});
-            const tx2 =await factory.addMintRequest(amount, btcTxid2, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx0 = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
+            const tx1 = await factory.addMintRequest(amount, txid1, custodianDepositAddressForMerchant0, {from: merchant0});
+            const tx2 =await factory.addMintRequest(amount, txid2, custodianDepositAddressForMerchant0, {from: merchant0});
 
             assert.notEqual(tx0.logs[0].args.requestHash,tx1.logs[0].args.requestHash); 
             assert.notEqual(tx1.logs[0].args.requestHash,tx2.logs[0].args.requestHash);
@@ -456,7 +456,7 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmMintRequest does not change request hash", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             const requestBefore = await factory.getMintRequest(0);
             const hashBefore = requestBefore[REQUEST_HASH_FIELD];
 
@@ -468,7 +468,7 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmMintRequest emits an event", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             const { logs } = await factory.confirmMintRequest(tx.logs[0].args.requestHash, {from});
 
             const requestAfter = await factory.getMintRequest(0);
@@ -479,14 +479,14 @@ contract('Factory', function(accounts) {
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
             assert.equal(logs[0].args.amount, amount);
-            assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
-            assert.equal(logs[0].args.btcTxid, btcTxid0);
+            assert.equal(logs[0].args.depositAddress, custodianDepositAddressForMerchant0);
+            assert.equal(logs[0].args.txid, txid0);
             assert.notEqual(logs[0].args.timestamp, 0);
             assert.equal(logs[0].args.requestHash, hashAfter);
         });
 
         it("rejectMintRequest", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.rejectMintRequest(tx.logs[0].args.requestHash, {from});
 
             const request = await factory.getMintRequest(0);
@@ -494,7 +494,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest with non exsting request hash", async function () {
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await expectThrow(
                     factory.rejectMintRequest("hash", {from}),
                     "given request hash does not match a pending request"
@@ -502,7 +502,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest of approved request fails", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(tx.logs[0].args.requestHash, {from});
             await expectThrow(
                     factory.rejectMintRequest(tx.logs[0].args.requestHash, {from}),
@@ -511,7 +511,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest of canceled request fails", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.cancelMintRequest(tx.logs[0].args.requestHash, {from: merchant0});
             await expectThrow(
                     factory.rejectMintRequest(tx.logs[0].args.requestHash, {from}),
@@ -520,7 +520,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest of rejected request fails", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.rejectMintRequest(tx.logs[0].args.requestHash, {from});
             await expectThrow(
                     factory.rejectMintRequest(tx.logs[0].args.requestHash, {from}),
@@ -529,7 +529,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest does not change request hash", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             const requestBefore = await factory.getMintRequest(0);
             const hashBefore = requestBefore[REQUEST_HASH_FIELD];
 
@@ -541,7 +541,7 @@ contract('Factory', function(accounts) {
         });
 
         it("rejectMintRequest emits an event", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             const { logs } = await factory.rejectMintRequest(tx.logs[0].args.requestHash, {from});
 
             const requestAfter = await factory.getMintRequest(0);
@@ -552,40 +552,40 @@ contract('Factory', function(accounts) {
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
             assert.equal(logs[0].args.amount, amount);
-            assert.equal(logs[0].args.btcDepositAddress, custodianBtcDepositAddressForMerchant0);
-            assert.equal(logs[0].args.btcTxid, btcTxid0);
+            assert.equal(logs[0].args.depositAddress, custodianDepositAddressForMerchant0);
+            assert.equal(logs[0].args.txid, txid0);
             assert.notEqual(logs[0].args.timestamp, 0);
             assert.equal(logs[0].args.requestHash, hashAfter);
         });
 
         it("confirmBurnRequest", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from})
             await wbtc.approve(factory.address, amount, {from: merchant0});
             const tx = await factory.burn(amount, {from: merchant0});
-            await factory.confirmBurnRequest(tx.logs[0].args.requestHash, btcTxid0, {from});
+            await factory.confirmBurnRequest(tx.logs[0].args.requestHash, txid0, {from});
 
             const request = await factory.getBurnRequest(0);
             assert.equal(request[REQUEST_STATUS_FIELD], REQUEST_STATUS_APPROVED);
         });
 
         it("confirmBurnRequest with 0 hash fails", async function () {
-            await expectThrow(factory.confirmBurnRequest(0, btcTxid0, {from}), "request hash is 0");
+            await expectThrow(factory.confirmBurnRequest(0, txid0, {from}), "request hash is 0");
         });
 
         it("confirmBurnRequest with non exsting request hash", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from})
             await wbtc.approve(factory.address, amount, {from: merchant0});
             await factory.burn(amount, {from: merchant0});
             await expectThrow(
-                    factory.confirmBurnRequest("hash", btcTxid0, {from}),
+                    factory.confirmBurnRequest("hash", txid0, {from}),
                     "given request hash does not match a pending request"
             );
         });
 
         it("confirmBurnRequest of request in the middle of the list (not last)", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(tx.logs[0].args.requestHash, {from})
 
             await wbtc.approve(factory.address, amount, {from: merchant0});
@@ -594,7 +594,7 @@ contract('Factory', function(accounts) {
             const tx2 = await factory.burn(amount / 4 , {from: merchant0});
             const tx3 = await factory.burn(amount / 4 , {from: merchant0});
             
-            await factory.confirmBurnRequest(tx2.logs[0].args.requestHash, btcTxid0, {from});
+            await factory.confirmBurnRequest(tx2.logs[0].args.requestHash, txid0, {from});
 
             const request0 = await factory.getBurnRequest(0);
             const request1 = await factory.getBurnRequest(1);
@@ -607,33 +607,33 @@ contract('Factory', function(accounts) {
         });
 
         it("confirmBurnRequest does change the request hash", async function () {
-            const { logs } = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const { logs } = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(logs[0].args.requestHash, {from})
             await wbtc.approve(factory.address, amount, {from: merchant0});
 
             await factory.burn(amount, {from: merchant0});
             const requestBefore = await factory.getBurnRequest(0);
-            await factory.confirmBurnRequest(requestBefore[REQUEST_HASH_FIELD], btcTxid0, {from})
+            await factory.confirmBurnRequest(requestBefore[REQUEST_HASH_FIELD], txid0, {from})
             const requestAfter = await factory.getBurnRequest(0);
             assert.notEqual(requestBefore[REQUEST_HASH_FIELD], requestAfter[REQUEST_HASH_FIELD]);
         });
 
         it("confirmBurnRequest emits an event", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from: merchant0});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from: merchant0});
             await factory.confirmMintRequest(tx.logs[0].args.requestHash, {from})
             await wbtc.approve(factory.address, amount, {from: merchant0});
 
             await factory.burn(amount, {from: merchant0});
             const request = await factory.getBurnRequest(0);
-            const { logs } = await factory.confirmBurnRequest(request[REQUEST_HASH_FIELD], btcTxid0, {from})
+            const { logs } = await factory.confirmBurnRequest(request[REQUEST_HASH_FIELD], txid0, {from})
 
             assert.equal(logs.length, 1);
             assert.equal(logs[0].event, 'BurnConfirmed');
             assert.equal(logs[0].args.nonce, 0);
             assert.equal(logs[0].args.requester, merchant0);
             assert.equal(logs[0].args.amount, amount);
-            assert.equal(logs[0].args.btcDepositAddress, merchant0BtcDepositAddress);
-            assert.equal(logs[0].args.btcTxid, btcTxid0);
+            assert.equal(logs[0].args.depositAddress, merchant0DepositAddress);
+            assert.equal(logs[0].args.txid, txid0);
             assert.notEqual(logs[0].args.timestamp, 0);
             assert.equal(logs[0].args.inputRequestHash, request[REQUEST_HASH_FIELD]);
         });
@@ -643,9 +643,9 @@ contract('Factory', function(accounts) {
         const from = other;
         const amount = 100;
         
-        it("setCustodianBtcDepositAddress reverts", async function () {
+        it("setCustodianDepositAddress reverts", async function () {
             await expectThrow(
-                factory.setCustodianBtcDepositAddress(merchant0, custodianBtcDepositAddressForMerchant0, {from: other}),
+                factory.setCustodianDepositAddress(merchant0, custodianDepositAddressForMerchant0, {from: other}),
                 "sender not a custodian"
             );
         });
@@ -666,7 +666,7 @@ contract('Factory', function(accounts) {
 
         it("confirmBurnRequest reverts", async function () {
             await expectThrow(
-                factory.confirmBurnRequest("hash", btcTxid0, {from}),
+                factory.confirmBurnRequest("hash", txid0, {from}),
                 "sender not a custodian"
             );
         });
@@ -684,18 +684,18 @@ contract('Factory', function(accounts) {
             const lengthBefore = await factory.getMintRequestsLength();
             assert.equal(lengthBefore, 0);
             
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
 
             const lengthAfter = await factory.getMintRequestsLength();
             assert.equal(lengthAfter, 5);
         });
 
         it("getBurnRequestsLength", async function () {
-            const tx = await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            const tx = await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
             await factory.confirmMintRequest(tx.logs[0].args.requestHash, {from: custodian0})
 
             const lengthBefore = await factory.getBurnRequestsLength();
@@ -714,11 +714,11 @@ contract('Factory', function(accounts) {
             const lengthBefore = await factory.getMintRequestsLength();
             assert.equal(lengthBefore, 0);
             
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
-            await factory.addMintRequest(amount, btcTxid0, custodianBtcDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
+            await factory.addMintRequest(amount, txid0, custodianDepositAddressForMerchant0, {from});
 
             const lengthAfter = await factory.getMintRequestsLength();
             assert.equal(lengthAfter, 5);

@@ -10,9 +10,9 @@ contract Factory is OwnableContract {
 
     struct Request {
         address requester; // sender of the request.
-        uint amount; // amount of wbtc to mint/burn.
-        string btcDepositAddress; // custodian's btc address in mint, merchant's btc address in burn.
-        string btcTxid; // bitcoin txid for sending/redeeming btc in the mint/burn process.
+        uint amount; // amount of token to mint/burn.
+        string depositAddress; // custodian's asset address in mint, merchant's asset address in burn.
+        string txid; // asset txid for sending/redeeming asset in the mint/burn process.
         uint nonce; // serial number allocated for each request.
         uint timestamp; // time of the request creation.
         RequestStatus status; // status of the request.
@@ -22,10 +22,10 @@ contract Factory is OwnableContract {
 
     // mapping between merchant to the corresponding custodian deposit address, used in the minting process.
     // by using a different deposit address per merchant the custodian can identify which merchant deposited.
-    mapping(address=>string) public custodianBtcDepositAddress;
+    mapping(address=>string) public custodianDepositAddress;
 
-    // mapping between merchant to the its deposit address where btc should be moved to, used in the burning process.
-    mapping(address=>string) public merchantBtcDepositAddress;
+    // mapping between merchant to the its deposit address where the asset should be moved to, used in the burning process.
+    mapping(address=>string) public merchantDepositAddress;
 
     // mapping between a mint request hash and the corresponding request nonce. 
     mapping(bytes32=>uint) public mintRequestNonce;
@@ -52,11 +52,11 @@ contract Factory is OwnableContract {
         _;
     }
 
-    event CustodianBtcDepositAddressSet(address indexed merchant, address indexed sender, string btcDepositAddress);
+    event CustodianDepositAddressSet(address indexed merchant, address indexed sender, string depositAddress);
 
-    function setCustodianBtcDepositAddress(
+    function setCustodianDepositAddress(
         address merchant,
-        string btcDepositAddress
+        string depositAddress
     )
         external
         onlyCustodian
@@ -64,20 +64,20 @@ contract Factory is OwnableContract {
     {
         require(merchant != 0, "invalid merchant address");
         require(controller.isMerchant(merchant), "merchant address is not a real merchant.");
-        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
+        require(!isEmptyString(depositAddress), "invalid asset deposit address");
 
-        custodianBtcDepositAddress[merchant] = btcDepositAddress;
-        emit CustodianBtcDepositAddressSet(merchant, msg.sender, btcDepositAddress);
+        custodianDepositAddress[merchant] = depositAddress;
+        emit CustodianDepositAddressSet(merchant, msg.sender, depositAddress);
         return true;
     }
 
-    event MerchantBtcDepositAddressSet(address indexed merchant, string btcDepositAddress);
+    event MerchantDepositAddressSet(address indexed merchant, string depositAddress);
 
-    function setMerchantBtcDepositAddress(string btcDepositAddress) external onlyMerchant returns (bool) {
-        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address");
+    function setMerchantDepositAddress(string depositAddress) external onlyMerchant returns (bool) {
+        require(!isEmptyString(depositAddress), "invalid asset deposit address");
 
-        merchantBtcDepositAddress[msg.sender] = btcDepositAddress;
-        emit MerchantBtcDepositAddressSet(msg.sender, btcDepositAddress);
+        merchantDepositAddress[msg.sender] = depositAddress;
+        emit MerchantDepositAddressSet(msg.sender, depositAddress);
         return true; 
     }
 
@@ -85,23 +85,23 @@ contract Factory is OwnableContract {
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAddress,
-        string btcTxid,
+        string depositAddress,
+        string txid,
         uint timestamp,
         bytes32 requestHash
     );
 
     function addMintRequest(
         uint amount,
-        string btcTxid,
-        string btcDepositAddress
+        string txid,
+        string depositAddress
     )
         external
         onlyMerchant
         returns (bool)
     {
-        require(!isEmptyString(btcDepositAddress), "invalid btc deposit address"); 
-        require(compareStrings(btcDepositAddress, custodianBtcDepositAddress[msg.sender]), "wrong btc deposit address");
+        require(!isEmptyString(depositAddress), "invalid asset deposit address"); 
+        require(compareStrings(depositAddress, custodianDepositAddress[msg.sender]), "wrong asset deposit address");
 
         uint nonce = mintRequests.length;
         uint timestamp = getTimestamp();
@@ -109,8 +109,8 @@ contract Factory is OwnableContract {
         Request memory request = Request({
             requester: msg.sender,
             amount: amount,
-            btcDepositAddress: btcDepositAddress,
-            btcTxid: btcTxid,
+            depositAddress: depositAddress,
+            txid: txid,
             nonce: nonce,
             timestamp: timestamp,
             status: RequestStatus.PENDING
@@ -120,7 +120,7 @@ contract Factory is OwnableContract {
         mintRequestNonce[requestHash] = nonce; 
         mintRequests.push(request);
 
-        emit MintRequestAdd(nonce, msg.sender, amount, btcDepositAddress, btcTxid, timestamp, requestHash);
+        emit MintRequestAdd(nonce, msg.sender, amount, depositAddress, txid, timestamp, requestHash);
         return true;
     }
 
@@ -143,8 +143,8 @@ contract Factory is OwnableContract {
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAddress,
-        string btcTxid,
+        string depositAddress,
+        string txid,
         uint timestamp,
         bytes32 requestHash
     );
@@ -162,8 +162,8 @@ contract Factory is OwnableContract {
             request.nonce,
             request.requester,
             request.amount,
-            request.btcDepositAddress,
-            request.btcTxid,
+            request.depositAddress,
+            request.txid,
             request.timestamp,
             requestHash
         );
@@ -174,8 +174,8 @@ contract Factory is OwnableContract {
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAddress,
-        string btcTxid,
+        string depositAddress,
+        string txid,
         uint timestamp,
         bytes32 requestHash
     );
@@ -192,8 +192,8 @@ contract Factory is OwnableContract {
             request.nonce,
             request.requester,
             request.amount,
-            request.btcDepositAddress,
-            request.btcTxid,
+            request.depositAddress,
+            request.txid,
             request.timestamp,
             requestHash
         );
@@ -204,26 +204,26 @@ contract Factory is OwnableContract {
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAddress,
+        string depositAddress,
         uint timestamp,
         bytes32 requestHash
     );
 
     function burn(uint amount) external onlyMerchant returns (bool) {
-        string memory btcDepositAddress = merchantBtcDepositAddress[msg.sender];
-        require(!isEmptyString(btcDepositAddress), "merchant btc deposit address was not set"); 
+        string memory depositAddress = merchantDepositAddress[msg.sender];
+        require(!isEmptyString(depositAddress), "merchant asset deposit address was not set"); 
 
         uint nonce = burnRequests.length;
         uint timestamp = getTimestamp();
 
         // set txid as empty since it is not known yet.
-        string memory btcTxid = "";
+        string memory txid = "";
 
         Request memory request = Request({
             requester: msg.sender,
             amount: amount,
-            btcDepositAddress: btcDepositAddress,
-            btcTxid: btcTxid,
+            depositAddress: depositAddress,
+            txid: txid,
             nonce: nonce,
             timestamp: timestamp,
             status: RequestStatus.PENDING
@@ -233,10 +233,10 @@ contract Factory is OwnableContract {
         burnRequestNonce[requestHash] = nonce; 
         burnRequests.push(request);
 
-        require(controller.getWBTC().transferFrom(msg.sender, controller, amount), "trasnfer tokens to burn failed");
+        require(controller.getToken().transferFrom(msg.sender, controller, amount), "transfer tokens to burn failed");
         require(controller.burn(amount), "burn failed");
 
-        emit Burned(nonce, msg.sender, amount, btcDepositAddress, timestamp, requestHash);
+        emit Burned(nonce, msg.sender, amount, depositAddress, timestamp, requestHash);
         return true;
     }
 
@@ -244,19 +244,19 @@ contract Factory is OwnableContract {
         uint indexed nonce,
         address indexed requester,
         uint amount,
-        string btcDepositAddress,
-        string btcTxid,
+        string depositAddress,
+        string txid,
         uint timestamp,
         bytes32 inputRequestHash
     );
 
-    function confirmBurnRequest(bytes32 requestHash, string btcTxid) external onlyCustodian returns (bool) {
+    function confirmBurnRequest(bytes32 requestHash, string txid) external onlyCustodian returns (bool) {
         uint nonce;
         Request memory request;
 
         (nonce, request) = getPendingBurnRequest(requestHash);
 
-        burnRequests[nonce].btcTxid = btcTxid;
+        burnRequests[nonce].txid = txid;
         burnRequests[nonce].status = RequestStatus.APPROVED;
         burnRequestNonce[calcRequestHash(burnRequests[nonce])] = nonce;
 
@@ -264,8 +264,8 @@ contract Factory is OwnableContract {
             request.nonce,
             request.requester,
             request.amount,
-            request.btcDepositAddress,
-            btcTxid,
+            request.depositAddress,
+            txid,
             request.timestamp,
             requestHash
         );
@@ -279,8 +279,8 @@ contract Factory is OwnableContract {
             uint requestNonce,
             address requester,
             uint amount,
-            string btcDepositAddress,
-            string btcTxid,
+            string depositAddress,
+            string txid,
             uint timestamp,
             string status,
             bytes32 requestHash
@@ -292,8 +292,8 @@ contract Factory is OwnableContract {
         requestNonce = request.nonce;
         requester = request.requester;
         amount = request.amount;
-        btcDepositAddress = request.btcDepositAddress;
-        btcTxid = request.btcTxid;
+        depositAddress = request.depositAddress;
+        txid = request.txid;
         timestamp = request.timestamp;
         status = statusString;
         requestHash = calcRequestHash(request);
@@ -310,8 +310,8 @@ contract Factory is OwnableContract {
             uint requestNonce,
             address requester,
             uint amount,
-            string btcDepositAddress,
-            string btcTxid,
+            string depositAddress,
+            string txid,
             uint timestamp,
             string status,
             bytes32 requestHash
@@ -323,8 +323,8 @@ contract Factory is OwnableContract {
         requestNonce = request.nonce;
         requester = request.requester;
         amount = request.amount;
-        btcDepositAddress = request.btcDepositAddress;
-        btcTxid = request.btcTxid;
+        depositAddress = request.depositAddress;
+        txid = request.txid;
         timestamp = request.timestamp;
         status = statusString;
         requestHash = calcRequestHash(request);
@@ -362,8 +362,8 @@ contract Factory is OwnableContract {
         return keccak256(abi.encode(
             request.requester,
             request.amount,
-            request.btcDepositAddress,
-            request.btcTxid,
+            request.depositAddress,
+            request.txid,
             request.nonce,
             request.timestamp
         ));
