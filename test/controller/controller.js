@@ -260,9 +260,9 @@ contract('Controller', function(accounts) {
             assert.equal(isMerchantAfter, true);
         });
 
-        it("check getWBTC.", async function () {
-            const gotWBTC =  await controller.getWBTC();
-            assert.equal(gotWBTC, wbtc.address);
+        it("check getToken.", async function () {
+            const gotToken =  await controller.getToken();
+            assert.equal(gotToken, wbtc.address);
         });
     });
 });

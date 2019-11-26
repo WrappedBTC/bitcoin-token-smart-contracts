@@ -1,4 +1,4 @@
-module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSendTx) {
+module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSendTx, tokenName) {
 
     const Web3 = require("web3");
     const fs = require("fs");
@@ -22,6 +22,7 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
     const factoryContractPath = path.join(__dirname, "../contracts/factory/");
     const tokenContractPath = path.join(__dirname, "../contracts/token/");
     const utilsContractPath = path.join(__dirname, "../contracts/utils/");
+    const tokenFileName = tokenName + '.sol';
 
     const compilationInput = {
         "OwnableContract.sol" : fs.readFileSync(utilsContractPath + 'OwnableContract.sol', 'utf8'),
@@ -32,7 +33,7 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
         "Factory.sol" : fs.readFileSync(factoryContractPath + 'Factory.sol', 'utf8'),
         "Members.sol" : fs.readFileSync(factoryContractPath + 'Members.sol', 'utf8'),
         "MembersInterface.sol" : fs.readFileSync(factoryContractPath + 'MembersInterface.sol', 'utf8'),
-        "WBTC.sol" : fs.readFileSync(tokenContractPath + 'WBTC.sol', 'utf8')
+        [tokenFileName] : fs.readFileSync(tokenContractPath + tokenFileName, 'utf8')
     };
 
     function findImports (_path) {
@@ -182,7 +183,7 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
         /////////////////////////////////////////////////////////////
 
         let tokenAddress, tokenContract;
-        [tokenAddress, tokenContract] = await deployContract(output, "WBTC.sol:WBTC", []);
+        [tokenAddress, tokenContract] = await deployContract(output, tokenFileName + ":" + tokenName, []);
         console.log("tokenAddress: " + tokenAddress);
 
         let controllerAddress, controllerContract;
@@ -237,15 +238,15 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
         nonce = await web3.eth.getTransactionCount(accountCustodianAddress);
         console.log("accountCustodianAddress nonce: " + nonce);
-        let custodianBtcDepositAddress = "1JPhiNBhZzBgWwjG6zaDchmXZyTyUN5Qny";
-        console.log("factoryContract.methods.setCustodianBtcDepositAddress: " + accountMerchantAddress + ", " + custodianBtcDepositAddress);
-        await sendTx(factoryContract.methods.setCustodianBtcDepositAddress(accountMerchantAddress, custodianBtcDepositAddress), accountCustodian);
+        let custodianDepositAddress = "1JPhiNBhZzBgWwjG6zaDchmXZyTyUN5Qny";
+        console.log("factoryContract.methods.setCustodianDepositAddress: " + accountMerchantAddress + ", " + custodianDepositAddress);
+        await sendTx(factoryContract.methods.setCustodianDepositAddress(accountMerchantAddress, custodianDepositAddress), accountCustodian);
 
         nonce = await web3.eth.getTransactionCount(accountMerchantAddress);
         console.log("accountMerchantAddress nonce: " + nonce);
-        let merchantBtcDepositAddress = "1E57B5SCkGVhFxDugko3quHxamPgkS8NxJ";
-        console.log("factoryContract.methods.setMerchantBtcDepositAddress: " + merchantBtcDepositAddress);
-        await sendTx(factoryContract.methods.setMerchantBtcDepositAddress(merchantBtcDepositAddress), accountMerchant);
+        let merchantDepositAddress = "1E57B5SCkGVhFxDugko3quHxamPgkS8NxJ";
+        console.log("factoryContract.methods.setMerchantDepositAddress: " + merchantDepositAddress);
+        await sendTx(factoryContract.methods.setMerchantDepositAddress(merchantDepositAddress), accountMerchant);
 
         nonce = await web3.eth.getTransactionCount(sender);
 
@@ -260,3 +261,7 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
     await main();
 };
+
+if (process.argv.length < 3) {
+    console.log("usage: node deployerImplementation.js <tokenName>");
+}

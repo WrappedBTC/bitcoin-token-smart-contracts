@@ -8,5 +8,5 @@ interface ControllerInterface {
     function burn(uint value) external returns (bool);
     function isCustodian(address addr) external view returns (bool);
     function isMerchant(address addr) external view returns (bool);
-    function getWBTC() external view returns (ERC20);
+    function getToken() external view returns (ERC20);
 }

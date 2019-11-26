@@ -6,15 +6,15 @@ This repository has the contracts that implement the wrapped btc token.
 
 # Compilation
 
-    node_modules/.bin/truffle compile
+    npm run compile
 
 # Testing
 
-    node_modules/.bin/truffle test
+    npm test
 
 # Testing Coverage
 
-    node node_modules/.bin/solidity-coverage
+    npm run coverage
 
 # Deployment
 
