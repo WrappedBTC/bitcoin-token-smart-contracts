@@ -1,0 +1,175 @@
+module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSendTx, tokenName) {
+
+    const TronWeb = require('tronweb');
+    const fs = require("fs");
+    const path = require('path');
+    const solc = require('solc')
+    let tronWeb;
+
+    let privateKey, account, sender;
+    let privateKeyCustodian, accountCustodian, accountCustodianAddress;
+    let privateKeyMerchant, accountMerchant, accountMerchantAddress;
+    let accountMultiSigAddress;
+
+    const controllerContractPath = path.join(__dirname, "../../contracts/controller/");
+    const factoryContractPath = path.join(__dirname, "../../contracts/factory/");
+    const tokenContractPath = path.join(__dirname, "../../contracts/token/");
+    const utilsContractPath = path.join(__dirname, "../../contracts/utils/");
+    const tokenFileName = tokenName + '.sol';
+
+    const compilationInput = {
+        "OwnableContract.sol" : fs.readFileSync(utilsContractPath + 'OwnableContract.sol', 'utf8'),
+        "OwnableContractOwner.sol" : fs.readFileSync(utilsContractPath + 'OwnableContractOwner.sol', 'utf8'),
+        "IndexedMapping.sol" : fs.readFileSync(utilsContractPath + 'IndexedMapping.sol', 'utf8'),
+        "Controller.sol" : fs.readFileSync(controllerContractPath + 'Controller.sol', 'utf8'),
+        "ControllerInterface.sol" : fs.readFileSync(controllerContractPath + 'ControllerInterface.sol', 'utf8'),
+        "Factory.sol" : fs.readFileSync(factoryContractPath + 'Factory.sol', 'utf8'),
+        "Members.sol" : fs.readFileSync(factoryContractPath + 'Members.sol', 'utf8'),
+        "MembersInterface.sol" : fs.readFileSync(factoryContractPath + 'MembersInterface.sol', 'utf8'),
+        [tokenFileName] : fs.readFileSync(tokenContractPath + tokenFileName, 'utf8')
+    };
+
+    function findImports (_path) {
+        if(_path.includes("openzeppelin-solidity")) 
+            return { contents: fs.readFileSync("../../node_modules/" + _path, 'utf8') }
+        else
+            return { contents: fs.readFileSync(path.join(__dirname, "../../contracts/", _path), 'utf8') }
+    }
+
+    function getKeyAndAccounts() {
+
+        let content = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+        privateKey = content["privateKey"]
+        privateKeyCustodian = content["privateKeyCustodian"] 
+        privateKeyMerchant = content["privateKeyMerchant"]
+        accountMultiSigAddress = content["accountMultiSigAddress"]
+        
+        tronWeb = new TronWeb({ fullHost: rpcUrl, privateKey: privateKey });
+        
+        account = {
+            address: tronWeb.address.fromPrivateKey(privateKey),
+            privateKey: privateKey
+        }
+        sender = account.address;
+
+        console.log("from",sender);
+
+        accountCustodian = {
+            address: tronWeb.address.fromPrivateKey(privateKeyCustodian),
+            privateKey: privateKeyCustodian
+        }
+        accountCustodianAddress = accountCustodian.address;
+        console.log("accountCustodianAddress", accountCustodianAddress);
+
+        accountMerchant = {
+            address: tronWeb.address.fromPrivateKey(privateKeyMerchant),
+            privateKey: privateKeyMerchant 
+        }
+        accountMerchantAddress = accountMerchant.address;
+        console.log("accountMerchantAddress", accountMerchantAddress);
+
+        console.log("accountMultiSigAddress", accountMultiSigAddress);
+    }
+
+    async function deployContract(solcOutput, contractName, ctorArgs) {
+        const actualName = contractName;
+        const bytecode = solcOutput.contracts[actualName].bytecode;
+        const abi = solcOutput.contracts[actualName].interface;
+
+        let contract_instance = await tronWeb.contract().new({
+            abi: abi,
+            bytecode:bytecode,
+            feeLimit:1000000000,
+            callValue:0,
+            userFeePercentage:1,
+            originEnergyLimit:10000000,
+            name: contractName,
+            parameters: ctorArgs
+        });
+
+                
+        let address = tronWeb.address.fromHex(contract_instance.address);
+        // console.log(contract_instance.address);
+        // console.log(address);
+
+        return [address, contract_instance];
+    }
+
+
+    async function main() {
+
+        getKeyAndAccounts();
+
+        console.log("starting compilation");
+
+        const output = await solc.compile({ sources: compilationInput }, 1, findImports);
+      
+        console.log("finished compilation");
+
+        /////////////////////////////////////////////////////////////
+
+        let tokenAddress, tokenContract;
+        [tokenAddress, tokenContract] = await deployContract(output, tokenFileName + ":" + tokenName, []);
+        console.log("tokenAddress: " + tokenAddress);
+
+        let controllerAddress, controllerContract;
+        [controllerAddress, controllerContract] = await deployContract(output, "Controller.sol:Controller", [tokenAddress]);
+        console.log("controllerAddress: " + controllerAddress)
+
+        let membersAddress, membersContract;
+        // set sender as owner here, can use controller in final deployment.
+        [membersAddress, membersContract] = await deployContract(output, "Members.sol:Members", [sender]);
+        console.log("membersAddress: " + membersAddress)
+
+        let factoryAddress, factoryContract;
+        [factoryAddress, factoryContract] = await deployContract(output, "Factory.sol:Factory", [controllerAddress]);
+        console.log("factoryAddress: " + factoryAddress)
+
+        ////////////////////////////////////////////////////////////
+
+        console.log("controllerContract.methods.setFactory: " + factoryAddress)
+        let result = await controllerContract.methods.setFactory(factoryAddress).send();
+        console.log('Transaction hash: ', result);
+
+        console.log("controllerContract.methods.setMembers: " + membersAddress)
+        result = await controllerContract.methods.setMembers(membersAddress).send();
+        console.log('Transaction hash: ', result);
+        ////////////////////////////////////////////////////////////
+
+        console.log("tokenContract.methods.transferOwnership: " + controllerAddress)
+        result = await tokenContract.methods.transferOwnership(controllerAddress).send();
+        console.log('Transaction hash: ', result);
+
+
+        console.log("controllerContract.methods.callClaimOwnership: " + tokenAddress)
+        result = await controllerContract.methods.callClaimOwnership(tokenAddress).send();
+        console.log('Transaction hash: ', result);
+        ////////////////////////////////////////////////////////////
+
+        console.log("membersContract.methods.setCustodian: " + accountCustodianAddress)
+       // await sendTx(membersContract.methods.setCustodian(accountCustodianAddress), account);
+         result = await membersContract.methods.setCustodian(accountCustodianAddress).send();
+        console.log('Transaction hash: ', result);
+
+        console.log("membersContract.methods.addMerchant: " + accountMerchantAddress)
+        result = await membersContract.methods.addMerchant(accountMerchantAddress).send();
+        console.log('Transaction hash: ', result);
+
+        ////////////////////////////////////////////////////////////
+/*
+        console.log("controllerContract.methods.transferOwnership: " + accountMultiSigAddress)
+        await sendTx(controllerContract.methods.transferOwnership(accountMultiSigAddress), account);
+
+        console.log("membersContract.methods.transferOwnership: " + accountMultiSigAddress)
+        await sendTx(membersContract.methods.transferOwnership(accountMultiSigAddress), account);
+
+        ////////////////////////////////////////////////////////////
+*/
+    }
+
+    await main();
+};
+
+if (process.argv.length < 4) {
+    console.log("usage: node deployerImplementation.js <tokenName>");
+}

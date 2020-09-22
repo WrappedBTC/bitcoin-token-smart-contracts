@@ -30,6 +30,7 @@
     "solc": "0.4.24",
     "solhint": "^1.2.1",
     "solidity-coverage": "^0.5.11",
+    "tronweb": "^2.8.0",
     "truffle": "4.1.13",
     "web3": "1.0.0-beta.35",
     "yargs": "^12.0.2"
