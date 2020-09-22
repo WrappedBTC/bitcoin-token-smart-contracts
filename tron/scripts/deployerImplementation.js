@@ -144,15 +144,17 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
       console.log('Transaction hash: ', result);
 
       ////////////////////////////////////////////////////////////
-      /*
+      
       console.log("controllerContract.methods.transferOwnership: " + accountMultiSigAddress)
-      await sendTx(controllerContract.methods.transferOwnership(accountMultiSigAddress), account);
+      result = await controllerContract.methods.transferOwnership(accountMultiSigAddress).send();
+      console.log('Transaction hash: ', result);
 
       console.log("membersContract.methods.transferOwnership: " + accountMultiSigAddress)
-      await sendTx(membersContract.methods.transferOwnership(accountMultiSigAddress), account);
+      result = await membersContract.methods.transferOwnership(accountMultiSigAddress).send();
+      console.log('Transaction hash: ', result);
 
       ////////////////////////////////////////////////////////////
-      */
+      
     }
   }
 
