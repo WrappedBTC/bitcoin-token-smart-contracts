@@ -68,10 +68,10 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
     let contract_instance = await tronWeb.contract().new({
       abi: abi,
       bytecode:bytecode,
-      feeLimit: feeLimit, //1000000000
+      feeLimit: feeLimit, 
       callValue:0,
       userFeePercentage:1,
-      originEnergyLimit: energyLimit, //10000000
+      originEnergyLimit: energyLimit, 
       name: name,
       parameters: ctorArgs
     });
@@ -135,7 +135,6 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
       ////////////////////////////////////////////////////////////
 
       console.log("membersContract.methods.setCustodian: " + accountCustodianAddress)
-      // await sendTx(membersContract.methods.setCustodian(accountCustodianAddress), account);
       result = await membersContract.methods.setCustodian(accountCustodianAddress).send();
       console.log('Transaction hash: ', result);
 
