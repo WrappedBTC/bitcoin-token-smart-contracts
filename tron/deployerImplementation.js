@@ -11,10 +11,10 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
   let privateKeyMerchant, accountMerchantAddress;
   let accountMultiSigAddress;
 
-  const controllerContractPath = path.join(__dirname, "../../contracts/controller/");
-  const factoryContractPath = path.join(__dirname, "../../contracts/factory/");
-  const tokenContractPath = path.join(__dirname, "../../contracts/token/");
-  const utilsContractPath = path.join(__dirname, "../../contracts/utils/");
+  const controllerContractPath = path.join(__dirname, "../contracts/controller/");
+  const factoryContractPath = path.join(__dirname, "../contracts/factory/");
+  const tokenContractPath = path.join(__dirname, "../contracts/token/");
+  const utilsContractPath = path.join(__dirname, "../contracts/utils/");
   const tokenFileName = tokenName + '.sol';
 
   const compilationInput = {
@@ -31,13 +31,12 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
 
   function findImports (_path) {
     if(_path.includes("openzeppelin-solidity")) 
-      return { contents: fs.readFileSync("../../node_modules/" + _path, 'utf8') }
+        return { contents: fs.readFileSync("node_modules/" + _path, 'utf8') }
     else
-      return { contents: fs.readFileSync(path.join(__dirname, "../../contracts/", _path), 'utf8') }
+        return { contents: fs.readFileSync(path.join(__dirname, "../contracts/", _path), 'utf8') }
   }
 
   function getKeyAndAccounts() {
-
     let content = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
     privateKey = content["privateKey"]
     privateKeyCustodian = content["privateKeyCustodian"] 

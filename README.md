@@ -18,5 +18,8 @@ This repository has the contracts that implement the wrapped btc token.
 
 # Deployment
 
-    node scripts/deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url]
+    node ethereum/deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url]
 
+# Tron Deployment
+
+    node tron/deployer.js --inputFile [file] --feeLimit [number] --energyLimit [number] --rpcUrl [url] --dontSendTx [bool] --tokenName [string]
