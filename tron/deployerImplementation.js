@@ -96,20 +96,20 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
 
     let tokenAddress, tokenContract;
     [tokenAddress, tokenContract] = await deployContract(output, tokenFileName + ":" + tokenName, []);
-    console.log("tokenAddress: " + tokenAddress);
+    console.log(`token : '${tokenAddress}',`)
 
     let controllerAddress, controllerContract;
     [controllerAddress, controllerContract] = await deployContract(output, "Controller.sol:Controller", [tokenAddress]);
-    console.log("controllerAddress: " + controllerAddress)
+    console.log(`controller : '${controllerAddress}',`)
 
     let membersAddress, membersContract;
     // set sender as owner here, can use controller in final deployment.
     [membersAddress, membersContract] = await deployContract(output, "Members.sol:Members", [sender]);
-    console.log("membersAddress: " + membersAddress)
+    console.log(`members : '${membersAddress}',`)
 
     let factoryAddress, factoryContract;
     [factoryAddress, factoryContract] = await deployContract(output, "Factory.sol:Factory", [controllerAddress]);
-    console.log("factoryAddress: " + factoryAddress)
+    console.log(`factory : '${factoryAddress}',`)
 
     console.log("Finished deployment\n");
     /////////////////////////////////////////////////////////////
