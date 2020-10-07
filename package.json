@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/truffle test",
+    "tron-test": "mocha --timeout 100000 ./test/deployer_tron.js",
     "compile": "./node_modules/.bin/truffle compile",
     "coverage": "./node_modules/.bin/solidity-coverage"
   },
@@ -25,6 +26,7 @@
     "chai-bignumber": "^2.0.2",
     "crypto-balances": "^2.1.3",
     "find-parent-dir": "^0.3.0",
+    "mocha": "8.1.3",
     "openzeppelin-solidity": "1.12.0",
     "rlp": "^2.1.0",
     "solc": "0.4.24",
