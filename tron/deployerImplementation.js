@@ -1,4 +1,4 @@
-module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl, dontSendTx, tokenName) {
+module.exports.deploy = async function(inputFile, feeLimit, energyLimit, userFeePercentage, rpcUrl, dontSendTx, tokenName) {
 
   const TronWeb = require('tronweb');
   const fs = require("fs");
@@ -69,7 +69,7 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
       bytecode:bytecode,
       feeLimit: feeLimit,
       callValue:0,
-      userFeePercentage:1,
+      userFeePercentage: userFeePercentage,
       originEnergyLimit: energyLimit,
       name: name,
       parameters: ctorArgs
@@ -163,6 +163,6 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
   await main();
 };
 
-if (process.argv.length < 5) {
+if (process.argv.length < 6) {
   console.log("usage: node deployerImplementation.js <tokenName>");
 }

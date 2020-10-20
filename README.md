@@ -22,4 +22,4 @@ This repository has the contracts that implement the wrapped btc token.
 
 # Tron Deployment
 
-    node tron/deployer.js --inputFile [file] --feeLimit [number] --energyLimit [number] --rpcUrl [url] --dontSendTx [bool] --tokenName [string]
+    node tron/deployer.js --inputFile [file] --feeLimit [number] --energyLimit [number] --userFeePercentage [number] --rpcUrl [url] --dontSendTx [bool] --tokenName [string]
