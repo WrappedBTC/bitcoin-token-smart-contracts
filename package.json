@@ -30,6 +30,7 @@
     "openzeppelin-solidity": "1.12.0",
     "rlp": "^2.1.0",
     "solc": "0.4.24",
+    "tron-solc": "^0.4.24",
     "solhint": "^1.2.1",
     "solidity-coverage": "^0.5.11",
     "tronweb": "^2.8.0",

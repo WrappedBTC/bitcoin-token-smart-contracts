@@ -3,7 +3,7 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
   const TronWeb = require('tronweb');
   const fs = require("fs");
   const path = require('path');
-  const solc = require('solc')
+  const solc = require('tron-solc')
   let tronWeb;
 
   let privateKey, sender;
@@ -11,10 +11,10 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
   let privateKeyMerchant, accountMerchantAddress;
   let accountMultiSigAddress;
 
-  const controllerContractPath = path.join(__dirname, "../contracts/controller/");
-  const factoryContractPath = path.join(__dirname, "../contracts/factory/");
-  const tokenContractPath = path.join(__dirname, "../contracts/token/");
-  const utilsContractPath = path.join(__dirname, "../contracts/utils/");
+  const controllerContractPath = path.join(__dirname, "./contracts/controller/");
+  const factoryContractPath = path.join(__dirname, "./contracts/factory/");
+  const tokenContractPath = path.join(__dirname, "./contracts/token/");
+  const utilsContractPath = path.join(__dirname, "./contracts/utils/");
   const tokenFileName = tokenName + '.sol';
 
   const compilationInput = {
@@ -30,21 +30,21 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
   };
 
   function findImports (_path) {
-    if(_path.includes("openzeppelin-solidity")) 
+    if(_path.includes("openzeppelin-solidity"))
         return { contents: fs.readFileSync("node_modules/" + _path, 'utf8') }
     else
-        return { contents: fs.readFileSync(path.join(__dirname, "../contracts/", _path), 'utf8') }
+        return { contents: fs.readFileSync(path.join(__dirname, "./contracts/", _path), 'utf8') }
   }
 
   function getKeyAndAccounts() {
     let content = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
     privateKey = content["privateKey"]
-    privateKeyCustodian = content["privateKeyCustodian"] 
+    privateKeyCustodian = content["privateKeyCustodian"]
     privateKeyMerchant = content["privateKeyMerchant"]
     accountMultiSigAddress = content["accountMultiSigAddress"]
-    
+
     tronWeb = new TronWeb({ fullHost: rpcUrl, privateKey: privateKey });
-    
+
     sender = tronWeb.address.fromPrivateKey(privateKey);
 
     console.log("\nfrom",sender);
@@ -67,14 +67,14 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
     let contract_instance = await tronWeb.contract().new({
       abi: abi,
       bytecode:bytecode,
-      feeLimit: feeLimit, 
+      feeLimit: feeLimit,
       callValue:0,
       userFeePercentage:1,
-      originEnergyLimit: energyLimit, 
+      originEnergyLimit: energyLimit,
       name: name,
       parameters: ctorArgs
     });
-            
+
     let address = tronWeb.address.fromHex(contract_instance.address);
 
     return [address, contract_instance];
@@ -87,8 +87,12 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
 
     console.log("\nStarting compilation");
 
-    const output = await solc.compile({ sources: compilationInput }, 1, findImports);
-  
+    let input = {
+      language: "Solidity",
+      sources: compilationInput,
+    };
+    const output = await solc.compile(input, 1, findImports);
+
     console.log("Finished compilation");
 
     /////////////////////////////////////////////////////////////
@@ -142,7 +146,7 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
       console.log('Transaction hash: ', result);
 
       ////////////////////////////////////////////////////////////
-      
+
       console.log("controllerContract.methods.transferOwnership: " + accountMultiSigAddress)
       result = await controllerContract.methods.transferOwnership(accountMultiSigAddress).send();
       console.log('Transaction hash: ', result);
@@ -152,7 +156,7 @@ module.exports.deploy = async function(inputFile, feeLimit, energyLimit, rpcUrl,
       console.log('Transaction hash: ', result);
 
       ////////////////////////////////////////////////////////////
-      
+
     }
   }
 
