@@ -1,25 +1,7 @@
-This repository has the contracts that implement the wrapped btc token.
+This repository has the contracts that implement the wrapped tokens.
 
-# Installation
+# Tron network
+https://github.com/KyberNetwork/bitcoin-token-smart-contractstron/tron/README.md
 
-    npm install
-
-# Compilation
-
-    npm run compile
-
-# Testing
-
-    npm test
-
-# Testing Coverage
-
-    npm run coverage
-
-# Deployment
-
-    node ethereum/deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url]
-
-# Tron Deployment
-
-    node tron/deployer.js --inputFile [file] --feeLimit [number] --energyLimit [number] --userFeePercentage [number] --rpcUrl [url] --dontSendTx [bool] --tokenName [string]
+# Ethereum network
+https://github.com/KyberNetwork/bitcoin-token-smart-contractstron/ethereumV2/README.md
