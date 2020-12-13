@@ -1,6 +1,6 @@
 const BigNumber = web3.BigNumber
 
-const deployer = require("../scripts/deployerImplementation.js");
+const deployer = require("../deployerImplementation.js");
 
 require("chai")
     .use(require("chai-as-promised"))
@@ -10,10 +10,10 @@ require("chai")
 contract('Deployer', function(accounts) {
 
     it("test WBTC deployer script on private net.", async function () {
-        await deployer.deploy("scripts/deployerInputTestrpc.json", 20, web3.currentProvider.host, false, "WBTC");
+        await deployer.deploy("deployerInputTestrpc.json", 20, web3.currentProvider.host, false, "WBTC");
     });
 
     it("test WXRP deployer script on private net.", async function () {
-        await deployer.deploy("scripts/deployerInputTestrpc.json", 20, web3.currentProvider.host, false, "WXRP");
+        await deployer.deploy("deployerInputTestrpc.json", 20, web3.currentProvider.host, false, "WXRP");
     });
 });
