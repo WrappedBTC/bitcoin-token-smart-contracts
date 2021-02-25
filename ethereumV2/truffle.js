@@ -5,6 +5,7 @@ module.exports = {
       runs: 200
     }
   },
+  contracts_directory: "./contracts",
   networks: {
     development: {
       host: "localhost",
