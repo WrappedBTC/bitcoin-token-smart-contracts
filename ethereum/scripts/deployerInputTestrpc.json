@@ -1,0 +1,6 @@
+{
+    "privateKey": "0xABCD",
+    "privateKeyCustodian": "0x1234",
+    "privateKeyMerchant": "0x5678",
+    "accountMultiSigAddress": "0xFFc4E87e971bb9000F4F042ED4A9A0E349415D98"
+}
