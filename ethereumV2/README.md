@@ -1,4 +1,4 @@
-This repository has the contracts that implement the wrapped btc token on Ethereum network.
+This repository has the contracts that implement the wrapped token for BTC, DOGE, ETH and XRP on Ethereum network.
 
 # Installation
 
@@ -18,4 +18,4 @@ This repository has the contracts that implement the wrapped btc token on Ethere
 
 # Deployment
 
-    node deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url]
+    node deployer.js --input-file [file] --gas-price-gwei [gwei] --rpc-url [url] ----token-name [string] --dont-send-tx [bool] --skip-add-members [bool]

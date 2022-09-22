@@ -1,4 +1,4 @@
-module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSendTx, tokenName) {
+module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSendTx, tokenName, skipAddMembers = false) {
 
     const Web3 = require("web3");
     const fs = require("fs");
@@ -217,11 +217,23 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
         ////////////////////////////////////////////////////////////
 
-        console.log("membersContract.methods.setCustodian: " + accountCustodianAddress)
-        await sendTx(membersContract.methods.setCustodian(accountCustodianAddress), account);
+        if (!skipAddMembers) {
+          console.log(
+            "membersContract.methods.setCustodian: " + accountCustodianAddress
+          );
+          await sendTx(
+            membersContract.methods.setCustodian(accountCustodianAddress),
+            account
+          );
 
-        console.log("membersContract.methods.addMerchant: " + accountMerchantAddress)
-        await sendTx(membersContract.methods.addMerchant(accountMerchantAddress), account);
+          console.log(
+            "membersContract.methods.addMerchant: " + accountMerchantAddress
+          );
+          await sendTx(
+            membersContract.methods.addMerchant(accountMerchantAddress),
+            account
+          );
+        }
 
         ////////////////////////////////////////////////////////////
 
@@ -233,20 +245,41 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
         ////////////////////////////////////////////////////////////
 
-        console.log("waiting to make sure the custodian and merchant were added on chain.")
+        console.log("waiting to make sure transactions were added on chain.")
         await sleep(20000)
 
-        nonce = await web3.eth.getTransactionCount(accountCustodianAddress);
-        console.log("accountCustodianAddress nonce: " + nonce);
-        let custodianDepositAddress = "1JPhiNBhZzBgWwjG6zaDchmXZyTyUN5Qny";
-        console.log("factoryContract.methods.setCustodianDepositAddress: " + accountMerchantAddress + ", " + custodianDepositAddress);
-        await sendTx(factoryContract.methods.setCustodianDepositAddress(accountMerchantAddress, custodianDepositAddress), accountCustodian);
+        if (!skipAddMembers) {
+          nonce = await web3.eth.getTransactionCount(accountCustodianAddress);
+          console.log("accountCustodianAddress nonce: " + nonce);
+          let custodianDepositAddress = "1JPhiNBhZzBgWwjG6zaDchmXZyTyUN5Qny";
+          console.log(
+            "factoryContract.methods.setCustodianDepositAddress: " +
+              accountMerchantAddress +
+              ", " +
+              custodianDepositAddress
+          );
+          await sendTx(
+            factoryContract.methods.setCustodianDepositAddress(
+              accountMerchantAddress,
+              custodianDepositAddress
+            ),
+            accountCustodian
+          );
 
-        nonce = await web3.eth.getTransactionCount(accountMerchantAddress);
-        console.log("accountMerchantAddress nonce: " + nonce);
-        let merchantDepositAddress = "1E57B5SCkGVhFxDugko3quHxamPgkS8NxJ";
-        console.log("factoryContract.methods.setMerchantDepositAddress: " + merchantDepositAddress);
-        await sendTx(factoryContract.methods.setMerchantDepositAddress(merchantDepositAddress), accountMerchant);
+          nonce = await web3.eth.getTransactionCount(accountMerchantAddress);
+          console.log("accountMerchantAddress nonce: " + nonce);
+          let merchantDepositAddress = "1E57B5SCkGVhFxDugko3quHxamPgkS8NxJ";
+          console.log(
+            "factoryContract.methods.setMerchantDepositAddress: " +
+              merchantDepositAddress
+          );
+          await sendTx(
+            factoryContract.methods.setMerchantDepositAddress(
+              merchantDepositAddress
+            ),
+            accountMerchant
+          );
+        }
 
         nonce = await web3.eth.getTransactionCount(sender);
 
