@@ -26,8 +26,8 @@
     "rlp": "^2.1.0",
     "solc": "^0.4.24",
     "solhint": "^1.2.1",
-    "solidity-coverage": "^0.5.11",
-    "truffle": "^4.1.13",
+    "solidity-coverage": "^0.8.2",
+    "truffle": "^5.7.9",
     "web3": "^1.0.0-beta.35",
     "yargs": "^12.0.2"
   }
