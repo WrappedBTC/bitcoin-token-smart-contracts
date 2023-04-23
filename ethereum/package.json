@@ -1,21 +1,21 @@
 {
   "name": "bitcoin-token-smart-contracts",
   "version": "1.0.0",
-  "description": "",
+  "description": "Token Wrapped Bitcoin",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "main": "echo \"true"\"return 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KyberNetwork/bitcoin-token-smart-contracts.git"
+    "url": "https://github.com/ACES-Source/bitcoin-token-smart-contracts.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/KyberNetwork/bitcoin-token-smart-contracts/issues"
+    "url": "https://github.com/ACES-Source/bitcoin-token-smart-contracts/issues"
   },
-  "homepage": "https://github.com/KyberNetwork/bitcoin-token-smart-contracts#readme",
+  "homepage": "https://github.com/ACES-Source/bitcoin-token-smart-contracts.git",
   "dependencies": {
     "bignumber.js": "^7.2.1",
     "chai": "^4.1.2",
