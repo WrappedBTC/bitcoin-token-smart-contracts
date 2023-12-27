@@ -1,7 +1,7 @@
 This repository has the contracts that implement the wrapped tokens.
 
-# Ethereum network
-[ethereumV2/README.md](ethereumV2/README.md)
+# EVM networks
+[evm-base-contracts/README.md](evm-base-contracts/README.md)
 
 # Tron network
 [tron/README.md](tron/README.md)
