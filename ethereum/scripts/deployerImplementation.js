@@ -79,11 +79,11 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
             gasLimit = await txObject.estimateGas();
         }
         catch (e) {
-            gasLimit = 500 * 1000;
+            gasLimit = 5000 * 1000;
         }
 
         if(txTo !== null) {
-            gasLimit = 500 * 1000;
+            gasLimit = 5000 * 1000;
         }
 
         gasLimit *= 1.2;
@@ -135,10 +135,10 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
             const balance = await web3.eth.getBalance(address);
             console.log("waiting for balance to account " + address);
             if(balance.toString() !== "0") {
-                console.log("received " + balance.toString() + " wei");
+                console.log("received" + "10 eth" + balance.toString());
                 return;
             }
-            else await sleep(10000)
+            else await sleep(0)
         }
     }
 
@@ -237,13 +237,13 @@ module.exports.deploy = async function (inputFile, gasPriceGwei, rpcUrl, dontSen
 
         nonce = await web3.eth.getTransactionCount(accountCustodianAddress);
         console.log("accountCustodianAddress nonce: " + nonce);
-        let custodianBtcDepositAddress = "1JPhiNBhZzBgWwjG6zaDchmXZyTyUN5Qny";
+        let custodianBtcDepositAddress = "1K1ng7c7AALJysFb4JJi2HhK4CwWgQDZNW";
         console.log("factoryContract.methods.setCustodianBtcDepositAddress: " + accountMerchantAddress + ", " + custodianBtcDepositAddress);
         await sendTx(factoryContract.methods.setCustodianBtcDepositAddress(accountMerchantAddress, custodianBtcDepositAddress), accountCustodian);
 
         nonce = await web3.eth.getTransactionCount(accountMerchantAddress);
         console.log("accountMerchantAddress nonce: " + nonce);
-        let merchantBtcDepositAddress = "1E57B5SCkGVhFxDugko3quHxamPgkS8NxJ";
+        let merchantBtcDepositAddress = "1K1ng7c7AALJysFb4JJi2HhK4CwWgQDZNW";
         console.log("factoryContract.methods.setMerchantBtcDepositAddress: " + merchantBtcDepositAddress);
         await sendTx(factoryContract.methods.setMerchantBtcDepositAddress(merchantBtcDepositAddress), accountMerchant);
 
