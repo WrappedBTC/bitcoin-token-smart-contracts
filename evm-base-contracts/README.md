@@ -1,4 +1,4 @@
-This repository has the contracts that implement the wrapped token for BTC, DOGE, ETH and XRP on EVM networks.
+This repository has the contracts that implement the wrapped token for BTC, DOGE, ETH and XRP on Ethereum network.
 
 # Installation
 
